@@ -646,7 +646,10 @@ const FACE_DATA = {
   bgm.loop = true;
   bgm.volume = 0.16; // BGMは控えめに、効果音を主役にする
 
+  const SFX_BUS = 0.9;   // 効果音バスの素の大きさ
+  const SFX_DUCK = 0.45; // 台詞が鳴っている間の倍率（約 -7dB）
   let sfxBus = null;
+  let voiceBus = null; // 台詞は sfxBus を通さない（台詞中だけ効果音を沈めるため）
   let kotoMainBuf = null; // 実サンプル琴（単音・基音 KOTO_MAIN_HZ）
   let kotoHighBuf = null; // 実サンプル琴（高音の装飾フレーズ・固定ピッチ）
   const KOTO_MAIN_HZ = 196.5;
@@ -656,8 +659,11 @@ const FACE_DATA = {
       if (AC) {
         audioCtx = new AC();
         sfxBus = audioCtx.createGain();
-        sfxBus.gain.value = 0.9;
+        sfxBus.gain.value = SFX_BUS;
         sfxBus.connect(audioCtx.destination);
+        voiceBus = audioCtx.createGain();
+        voiceBus.gain.value = SFX_BUS; // 台詞の大きさは据え置き（旧: gain 1.0 × sfxBus 0.9）
+        voiceBus.connect(audioCtx.destination);
         // data URI は fetch を使わず直接デコードする
         // （Artifact ページの CSP が connect-src で data: への fetch を弾くため）
         const bytes = (url) => {
@@ -691,8 +697,24 @@ const FACE_DATA = {
     src.buffer = buf;
     const g = audioCtx.createGain();
     g.gain.value = 1.0; // 台詞は聞き取りやすさ優先で前に出す
-    src.connect(g).connect(sfxBus);
-    src.start(audioCtx.currentTime + 0.02);
+    src.connect(g).connect(voiceBus);
+    const t = audioCtx.currentTime + 0.02;
+    src.start(t);
+    duckSfx(t, buf.duration);
+  }
+  // 琴と木魚は台詞とほぼ同じ大きさで鳴るので、素のままだと名乗りの頭が埋もれる。
+  // 一律に効果音を下げるとぴったり浄化の手応えが痩せるため、台詞の間だけ沈める。
+  // （測定と考え方は docs/VOICE.md「音量の設計」）
+  let duckUntil = 0;
+  function duckSfx(startAt, dur) {
+    if (!sfxBus) return;
+    const end = startAt + dur;
+    if (end <= duckUntil) return; // 先に入った台詞のほうが長ければ何もしない
+    duckUntil = end;
+    const g = sfxBus.gain;
+    g.cancelScheduledValues(startAt);
+    g.setTargetAtTime(SFX_BUS * SFX_DUCK, startAt, 0.05);                  // 0.15秒ほどで沈む
+    g.setTargetAtTime(SFX_BUS, Math.max(startAt + 0.1, end - 0.2), 0.12);  // 語尾にかけて戻す
   }
   const spiritVoice = (key) => voiceLine(key);
   // 合成弦（サンプル到着までの代用）: Karplus-Strong
