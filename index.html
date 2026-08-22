@@ -162,6 +162,36 @@
   #final-score small { font-size: 18px; color: var(--ink); margin-left: 2px; }
   #final-title-label { font-size: 10px; letter-spacing: .25em; color: var(--ink-dim); }
   #final-title { font-size: 17px; font-weight: 800; letter-spacing: .2em; color: var(--moon); margin-top: 2px; }
+  /* 満月成就のクリア画面: 夜明けの蝕紅に対して、こちらは金泥で祝う */
+  #result-card.clear {
+    border-color: var(--moon);
+    box-shadow: 0 0 0 3px rgba(19, 16, 38, .9), 0 0 0 4px #b89b5a,
+                0 0 64px rgba(240, 206, 126, .22), 0 14px 50px rgba(0, 0, 0, .65);
+  }
+  #result-card.clear .title { color: var(--moon); }
+  #result-card.clear #final-fuda {
+    width: 172px;
+    border-color: var(--moon);
+    box-shadow: 0 0 26px rgba(240, 206, 126, .34);
+  }
+  /* 栞の満願の言葉。読ませたいので札絵のすぐ下に置く */
+  #final-quote {
+    font-size: 12.5px;
+    line-height: 1.95;
+    color: var(--ink);
+    letter-spacing: .05em;
+    border-top: 1px solid rgba(184, 155, 90, .35);
+    border-bottom: 1px solid rgba(184, 155, 90, .35);
+    padding: 9px 2px;
+  }
+  #final-quote b {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .25em;
+    color: var(--moon);
+    margin-bottom: 3px;
+  }
   #retry {
     margin-top: 6px;
     font-family: inherit;
@@ -443,10 +473,13 @@
 </div>
 
 <div id="overlay">
-  <div class="card">
-    <div class="title">札は夜に呑まれた</div>
-    <div class="sub">重ねた道は、ここまで</div>
+  <div class="card" id="result-card">
+    <div class="title" id="final-heading">札は夜に呑まれた</div>
+    <div class="sub" id="final-sub">重ねた道は、ここまで</div>
     <img id="final-fuda" alt="到達した御霊の札絵">
+    <div id="final-quote" hidden>
+      <b>栞</b>月に、届きました。お見事ですこと、あるじどの
+    </div>
     <div>
       <div id="final-title-label">称号</div>
       <div id="final-title"></div>
@@ -597,7 +630,7 @@ const FACE_DATA = {
   const TITLES = [
     [0, "宵の口"], [8, "札運びの見習い"], [16, "重ね手の手習い"], [24, "夜風を読む手"],
     [32, "静かなる重ね手"], [40, "五行の律の使い手"], [48, "宵闇の棟梁"], [56, "月導の架け手"],
-    [64, "緋桜の同志"], [72, "月白の頂"], [80, "満月成就"], [100, "月渡りの名人"],
+    [64, "緋桜の同志"], [72, "月白の頂"], [80, "満月成就"],
   ];
   function titleFor(floors) {
     let t = TITLES[0][1];
@@ -874,6 +907,7 @@ const FACE_DATA = {
   let camY = 0;
   let pausedUntil = 0;
   let moonDone = false;
+  let cleared = false;   // 満月成就で終えたか（夜明けと結果画面を出し分ける）
   let nextBellAt = 0;
   let best = 0;
   try { best = +(localStorage.getItem("fudakasane_best") || 0); } catch (e) {}
@@ -1001,13 +1035,21 @@ const FACE_DATA = {
       nextBellAt = performance.now() + 800;
     }
     if (floors === MOON_FLOOR && !moonDone) {
+      // 満月成就でその夜は終わり。カットイン→栞の満願の言葉→クリア画面の順で見せる
       moonDone = true;
-      pausedUntil = performance.now() + 1900;
+      cleared = true;
+      over = true;      // 入力も札の往き来も止める（夜明けとは別の終わり方）
+      slab = null;
+      overAt = performance.now();
       addFloater(CX, floors * TH + 96, "満月成就", "#F0CE7E");
       goldBurst(ctrX, floors * TH, 40);
       showCutin();
       sfxMoonFull();
       setTimeout(() => voiceLine("shiori_goal"), 1500); // 栞が満願を讃える
+      updateSpiritFace();
+      updateHud();
+      sfxPlace();
+      return;           // 次の札は出さない
     }
     updateSpiritFace();
     updateHud();
@@ -1049,11 +1091,20 @@ const FACE_DATA = {
 
   function showGameOver() {
     saveBestTitle();
+    // 満月成就なら道しるべの栞が締める。夜明けならそこまで導いた御霊を出す
+    document.getElementById("result-card").classList.toggle("clear", cleared);
+    document.getElementById("final-heading").textContent = cleared ? "満月成就" : "札は夜に呑まれた";
+    document.getElementById("final-sub").textContent =
+      cleared ? "喰われた月へ、道が架かった" : "重ねた道は、ここまで";
+    document.getElementById("final-quote").hidden = !cleared;
     document.getElementById("final-title").textContent = titleFor(floors);
     document.getElementById("final-score").innerHTML = floors + "<small>段</small>";
-    const reached = floors >= MOON_ZONE ? SHIORI : SPIRITS[Math.min(Math.floor(Math.max(floors - 1, 0) / 8), 8)];
+    const reached = (cleared || floors >= MOON_ZONE)
+      ? SHIORI
+      : SPIRITS[Math.min(Math.floor(Math.max(floors - 1, 0) / 8), 8)];
     const fudaEl = document.getElementById("final-fuda");
     fudaEl.src = FUDA_ART[reached.key];
+    fudaEl.alt = reached.name + "の札絵";
     fudaEl.style.display = "block";
     document.getElementById("overlay").classList.add("show");
   }
@@ -1067,6 +1118,7 @@ const FACE_DATA = {
     streak = 0;
     camY = 0;
     moonDone = false;
+    cleared = false;
     pausedUntil = performance.now() + 700; // リトライボタンのタップの名残を受けない
     particles.length = rings.length = pieces.length = floaters.length = 0;
     updateSpiritFace();
@@ -1408,7 +1460,8 @@ const FACE_DATA = {
       sfxBell();
       nextBellAt = now + 2600 + Math.random() * 900;
     }
-    if (over && overAt && now - overAt > 950) {
+    // 夜明けはすぐ、満月成就はカットインと栞の満願の言葉が終わってから
+    if (over && overAt && now - overAt > (cleared ? 4600 : 950)) {
       overAt = 0;
       showGameOver();
     }

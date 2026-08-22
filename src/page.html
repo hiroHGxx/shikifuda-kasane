@@ -162,6 +162,36 @@
   #final-score small { font-size: 18px; color: var(--ink); margin-left: 2px; }
   #final-title-label { font-size: 10px; letter-spacing: .25em; color: var(--ink-dim); }
   #final-title { font-size: 17px; font-weight: 800; letter-spacing: .2em; color: var(--moon); margin-top: 2px; }
+  /* 満月成就のクリア画面: 夜明けの蝕紅に対して、こちらは金泥で祝う */
+  #result-card.clear {
+    border-color: var(--moon);
+    box-shadow: 0 0 0 3px rgba(19, 16, 38, .9), 0 0 0 4px #b89b5a,
+                0 0 64px rgba(240, 206, 126, .22), 0 14px 50px rgba(0, 0, 0, .65);
+  }
+  #result-card.clear .title { color: var(--moon); }
+  #result-card.clear #final-fuda {
+    width: 172px;
+    border-color: var(--moon);
+    box-shadow: 0 0 26px rgba(240, 206, 126, .34);
+  }
+  /* 栞の満願の言葉。読ませたいので札絵のすぐ下に置く */
+  #final-quote {
+    font-size: 12.5px;
+    line-height: 1.95;
+    color: var(--ink);
+    letter-spacing: .05em;
+    border-top: 1px solid rgba(184, 155, 90, .35);
+    border-bottom: 1px solid rgba(184, 155, 90, .35);
+    padding: 9px 2px;
+  }
+  #final-quote b {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .25em;
+    color: var(--moon);
+    margin-bottom: 3px;
+  }
   #retry {
     margin-top: 6px;
     font-family: inherit;
@@ -443,10 +473,13 @@
 </div>
 
 <div id="overlay">
-  <div class="card">
-    <div class="title">札は夜に呑まれた</div>
-    <div class="sub">重ねた道は、ここまで</div>
+  <div class="card" id="result-card">
+    <div class="title" id="final-heading">札は夜に呑まれた</div>
+    <div class="sub" id="final-sub">重ねた道は、ここまで</div>
     <img id="final-fuda" alt="到達した御霊の札絵">
+    <div id="final-quote" hidden>
+      <b>栞</b>月に、届きました。お見事ですこと、あるじどの
+    </div>
     <div>
       <div id="final-title-label">称号</div>
       <div id="final-title"></div>

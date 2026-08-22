@@ -56,7 +56,7 @@
   const TITLES = [
     [0, "宵の口"], [8, "札運びの見習い"], [16, "重ね手の手習い"], [24, "夜風を読む手"],
     [32, "静かなる重ね手"], [40, "五行の律の使い手"], [48, "宵闇の棟梁"], [56, "月導の架け手"],
-    [64, "緋桜の同志"], [72, "月白の頂"], [80, "満月成就"], [100, "月渡りの名人"],
+    [64, "緋桜の同志"], [72, "月白の頂"], [80, "満月成就"],
   ];
   function titleFor(floors) {
     let t = TITLES[0][1];
@@ -333,6 +333,7 @@
   let camY = 0;
   let pausedUntil = 0;
   let moonDone = false;
+  let cleared = false;   // 満月成就で終えたか（夜明けと結果画面を出し分ける）
   let nextBellAt = 0;
   let best = 0;
   try { best = +(localStorage.getItem("fudakasane_best") || 0); } catch (e) {}
@@ -460,13 +461,21 @@
       nextBellAt = performance.now() + 800;
     }
     if (floors === MOON_FLOOR && !moonDone) {
+      // 満月成就でその夜は終わり。カットイン→栞の満願の言葉→クリア画面の順で見せる
       moonDone = true;
-      pausedUntil = performance.now() + 1900;
+      cleared = true;
+      over = true;      // 入力も札の往き来も止める（夜明けとは別の終わり方）
+      slab = null;
+      overAt = performance.now();
       addFloater(CX, floors * TH + 96, "満月成就", "#F0CE7E");
       goldBurst(ctrX, floors * TH, 40);
       showCutin();
       sfxMoonFull();
       setTimeout(() => voiceLine("shiori_goal"), 1500); // 栞が満願を讃える
+      updateSpiritFace();
+      updateHud();
+      sfxPlace();
+      return;           // 次の札は出さない
     }
     updateSpiritFace();
     updateHud();
@@ -508,11 +517,20 @@
 
   function showGameOver() {
     saveBestTitle();
+    // 満月成就なら道しるべの栞が締める。夜明けならそこまで導いた御霊を出す
+    document.getElementById("result-card").classList.toggle("clear", cleared);
+    document.getElementById("final-heading").textContent = cleared ? "満月成就" : "札は夜に呑まれた";
+    document.getElementById("final-sub").textContent =
+      cleared ? "喰われた月へ、道が架かった" : "重ねた道は、ここまで";
+    document.getElementById("final-quote").hidden = !cleared;
     document.getElementById("final-title").textContent = titleFor(floors);
     document.getElementById("final-score").innerHTML = floors + "<small>段</small>";
-    const reached = floors >= MOON_ZONE ? SHIORI : SPIRITS[Math.min(Math.floor(Math.max(floors - 1, 0) / 8), 8)];
+    const reached = (cleared || floors >= MOON_ZONE)
+      ? SHIORI
+      : SPIRITS[Math.min(Math.floor(Math.max(floors - 1, 0) / 8), 8)];
     const fudaEl = document.getElementById("final-fuda");
     fudaEl.src = FUDA_ART[reached.key];
+    fudaEl.alt = reached.name + "の札絵";
     fudaEl.style.display = "block";
     document.getElementById("overlay").classList.add("show");
   }
@@ -526,6 +544,7 @@
     streak = 0;
     camY = 0;
     moonDone = false;
+    cleared = false;
     pausedUntil = performance.now() + 700; // リトライボタンのタップの名残を受けない
     particles.length = rings.length = pieces.length = floaters.length = 0;
     updateSpiritFace();
@@ -867,7 +886,8 @@
       sfxBell();
       nextBellAt = now + 2600 + Math.random() * 900;
     }
-    if (over && overAt && now - overAt > 950) {
+    // 夜明けはすぐ、満月成就はカットインと栞の満願の言葉が終わってから
+    if (over && overAt && now - overAt > (cleared ? 4600 : 950)) {
       overAt = 0;
       showGameOver();
     }
