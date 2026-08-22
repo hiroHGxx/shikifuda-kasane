@@ -78,8 +78,23 @@
 - ビルド: `node scripts/build-dist.js` → index.html（Pages用・単一ファイル）／ dist/artifact.html（全埋め込み・約13.5MB）
 - **重要**: Artifact の CSP は `fetch(data:)` をブロックする。音源は `atob()` で直接 ArrayBuffer 化して decodeAudioData すること（fetch を使うと Artifact 上で全滅する）
 
-## 9. 配信
+## 9. 検証
+
+80段までの通し確認は、実時間で自動プレイさせて撮るのが確実。
+
+```bash
+python3 -m http.server 8765          # リポジトリ直下で
+node shoot.js out.png                # puppeteer-core で #autotest を開き overlay.show を待つ
+```
+
+- `#autotest` は「ぴったりの位置に来たら置く」ので**80段到達まで実時間で約77秒**かかる
+- **Chrome の `--virtual-time-budget` では進まない**（rAF 駆動のゲームループが仮想時間で回らず、0段のまま撮れてしまう）。puppeteer で実時間待ちにすること
+- 夜明け側の確認は `#autocut`（わざと40pxずらすので数段で終わる）
+
+## 10. 配信
 
 - 開発プレビュー: Claude Artifact `92054db4-c1ff-4073-a4d2-87e522d2ca8a`
 - ボイス帖（試聴用）: Claude Artifact `c7500fd9-fb59-4d3e-8c13-91108370e2a6`
-- GitHub / Pages / わいわいタウン: **未着手**
+- GitHub: https://github.com/hiroHGxx/shikifuda-kasane （main / ルートから Pages 配信）
+- 公開URL: https://hirohgxx.github.io/shikifuda-kasane/
+- わいわいタウン: **未掲載**（サムネ640×640・プレビュー動画15秒以内が要る）
