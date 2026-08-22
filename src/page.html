@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>式札かさね</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='14' y='58' width='72' height='16' rx='3' fill='%23D9A94C'/><rect x='22' y='38' width='56' height='16' rx='3' fill='%23F0CE7E'/><circle cx='50' cy='16' r='11' fill='%23E8E4D8'/></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=M+PLUS+Rounded+1c:wght@800&display=swap">
+<style>
+  /* 公式トンマナ「宵闇に金」の実装トークンに準拠（御霊おとしと共通） */
+  :root {
+    --night: #131320;    /* 宵闇藍 */
+    --night-2: #1B1B2E;  /* 宵闇藍・明 */
+    --line: #4a4468;
+    --ink: #E8E4D8;      /* 月白 */
+    --ink-dim: #9D93B5;
+    --moon: #F0CE7E;     /* 金泥・高輝度 */
+    --kindei: #D9A94C;   /* 金泥 */
+    --shokko: #E0562F;   /* 蝕紅: 警告と高揚のみ・面積5%以下 */
+    --anshi: #8E6B9E;    /* 暗紫: 夜桜 */
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; touch-action: none; }
+  button { touch-action: manipulation; }
+  body {
+    background: var(--night);
+    color: var(--ink);
+    font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", serif;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  header {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px 6px;
+  }
+  h1 {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    background: linear-gradient(160deg, #f6e5ae 20%, #d9b45a 55%, #f2d98c 80%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  h1 small {
+    display: block;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: .22em;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    color: var(--ink-dim);
+  }
+  .stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    background: linear-gradient(170deg, rgba(28, 24, 54, .85), rgba(19, 16, 38, .9));
+    border: 1px solid #6d5a33;
+    box-shadow: 0 0 0 1px rgba(184, 155, 90, .25) inset;
+    border-radius: 8px;
+    padding: 5px 10px;
+  }
+  .stat { text-align: right; }
+  .stat .label { font-size: 9px; letter-spacing: .2em; color: var(--ink-dim); }
+  .stat .value {
+    font-family: "M PLUS Rounded 1c", "Shippori Mincho B1", sans-serif;
+    font-size: 19px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .stat .value.bump { animation: score-bump .18s ease; }
+  @keyframes score-bump { 40% { transform: scale(1.22); color: var(--moon); } }
+  .spirit-now {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .spirit-now .label { font-size: 9px; letter-spacing: .25em; color: var(--ink-dim); }
+  #spirit-face {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2.5px solid var(--line);
+    background: #fdfbf6;
+    object-fit: cover;
+  }
+  main {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+  canvas { display: block; border-radius: 6px; }
+  #overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 10, 24, .78);
+    z-index: 10;
+  }
+  #overlay.show { display: flex; }
+  .card {
+    background: linear-gradient(170deg, rgba(28, 24, 54, .93), rgba(19, 16, 38, .95));
+    border: 1px solid #b89b5a;
+    box-shadow: 0 0 0 3px rgba(19, 16, 38, .9), 0 0 0 4px #6d5a33, 0 14px 50px rgba(0, 0, 0, .65);
+    border-radius: 10px;
+    padding: 30px 38px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    max-width: min(92vw, 420px);
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+  }
+  #final-fuda {
+    display: none;
+    width: 148px;
+    border-radius: 8px;
+    border: 2px solid #b89b5a;
+    margin: 0 auto;
+  }
+  .card .title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: .3em;
+    color: var(--shokko);
+  }
+  .card .sub { font-size: 11px; letter-spacing: .12em; color: var(--ink-dim); margin-top: -6px; }
+  .card .score-label { font-size: 10px; letter-spacing: .25em; color: var(--ink-dim); }
+  #final-score {
+    font-family: "M PLUS Rounded 1c", "Shippori Mincho B1", sans-serif;
+    font-size: 44px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--moon);
+    line-height: 1.1;
+  }
+  #final-score small { font-size: 18px; color: var(--ink); margin-left: 2px; }
+  #final-title-label { font-size: 10px; letter-spacing: .25em; color: var(--ink-dim); }
+  #final-title { font-size: 17px; font-weight: 800; letter-spacing: .2em; color: var(--moon); margin-top: 2px; }
+  #retry {
+    margin-top: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .2em;
+    color: var(--night);
+    background: var(--moon);
+    border: none;
+    border-radius: 6px;
+    padding: 12px 28px;
+    cursor: pointer;
+  }
+  #retry:focus-visible { outline: 3px solid var(--moon); outline-offset: 2px; }
+  #mute {
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    background: transparent;
+    color: var(--moon);
+    cursor: pointer;
+  }
+  #mute.off { color: var(--ink-dim); text-decoration: line-through; }
+  #mute:focus-visible { outline: 2px solid var(--moon); outline-offset: 2px; }
+  /* 満月成就カットイン（御霊おとしと同じ帯演出・絵は右向きなので左→右） */
+  #cutin {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 15;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #cutin.show { display: flex; }
+  #cutin::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 26vh;
+    height: 48vh;
+    background: linear-gradient(90deg, rgba(10, 10, 24, 0), rgba(10, 10, 24, .88) 10%, rgba(10, 10, 24, .88) 90%, rgba(10, 10, 24, 0));
+    animation: band-fade 1.7s ease forwards;
+  }
+  #cutin img {
+    position: relative;
+    width: min(94vw, 620px);
+    max-height: 46vh;
+    object-fit: contain;
+    filter: drop-shadow(0 0 44px rgba(242, 217, 140, .45));
+    animation: cutin-slide 1.7s cubic-bezier(.2, .8, .25, 1) forwards;
+  }
+  @keyframes cutin-slide {
+    0%   { transform: translateX(-125%) rotate(2deg); }
+    13%  { transform: translateX(0) rotate(2deg); }
+    80%  { transform: translateX(3%) rotate(2deg); }
+    100% { transform: translateX(140%) rotate(2deg); }
+  }
+  @keyframes band-fade { 0% { opacity: 0; } 10% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+  /* 帳（とばり）: 開幕に左右へ開く黒緞子の扉。本家の意匠に倣い、合わせ目に金襴の帯を通す */
+  #door {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 25;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #door.show { display: block; }
+  .door-half {
+    position: absolute;
+    top: -2%;
+    height: 104%;
+    width: 50.6%;
+    /* 黒緞子: 縦の襞（ひだ）を重ねたグラデーションで布の陰影を出す */
+    background:
+      repeating-linear-gradient(90deg,
+        rgba(255,255,255,.045) 0px, rgba(0,0,0,0) 14px,
+        rgba(0,0,0,.5) 30px, rgba(0,0,0,0) 46px, rgba(255,255,255,.03) 60px),
+      radial-gradient(120% 60% at 50% 0%, #1a1a25 0%, #0d0d14 55%, #07070c 100%);
+    box-shadow: 0 0 60px rgba(0,0,0,.9) inset;
+    transition: transform 1.5s cubic-bezier(.65, .02, .28, 1);
+    will-change: transform;
+  }
+  .door-l { left: 0; }
+  .door-r { right: 0; }
+  /* 金襴の帯: 合わせ目に沿って走る金泥の唐草（花紋と蔓を繰り返す織り） */
+  .door-band {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 34px;
+    background-color: #150d0b;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='72' viewBox='0 0 34 72'%3E%3Crect width='34' height='72' fill='%23150d0b'/%3E%3Cpath d='M17 -4 C6 8 28 22 17 36 C6 50 28 64 17 76' stroke='%238f1f2e' stroke-width='6' fill='none'/%3E%3Cpath d='M17 -4 C6 8 28 22 17 36 C6 50 28 64 17 76' stroke='%23c9a24a' stroke-width='1.5' fill='none'/%3E%3Cpath d='M8 12 C3 16 6 22 11 20' stroke='%23c9a24a' stroke-width='1.2' fill='none'/%3E%3Cpath d='M26 48 C31 52 28 58 23 56' stroke='%23c9a24a' stroke-width='1.2' fill='none'/%3E%3Cg fill='none' stroke='%23e8c877' stroke-width='1.3'%3E%3Ccircle cx='17' cy='18' r='5'/%3E%3Cellipse cx='17' cy='12.6' rx='2.1' ry='2.8'/%3E%3Cellipse cx='17' cy='23.4' rx='2.1' ry='2.8'/%3E%3Cellipse cx='11.6' cy='18' rx='2.8' ry='2.1'/%3E%3Cellipse cx='22.4' cy='18' rx='2.8' ry='2.1'/%3E%3Ccircle cx='17' cy='54' r='5'/%3E%3Cellipse cx='17' cy='48.6' rx='2.1' ry='2.8'/%3E%3Cellipse cx='17' cy='59.4' rx='2.1' ry='2.8'/%3E%3Cellipse cx='11.6' cy='54' rx='2.8' ry='2.1'/%3E%3Cellipse cx='22.4' cy='54' rx='2.8' ry='2.1'/%3E%3C/g%3E%3Ccircle cx='17' cy='18' r='1.5' fill='%23e8c877'/%3E%3Ccircle cx='17' cy='54' r='1.5' fill='%23e8c877'/%3E%3Crect x='1.4' width='1.6' height='72' fill='%23d9a94c'/%3E%3Crect x='31' width='1.6' height='72' fill='%23d9a94c'/%3E%3C/svg%3E");
+    background-repeat: repeat-y;
+    box-shadow: 0 0 18px rgba(240,206,126,.3);
+  }
+  .door-l .door-band { right: 0; }
+  .door-r .door-band { left: 0; }
+  #door.open .door-l { transform: translateX(-101%); }
+  #door.open .door-r { transform: translateX(101%); }
+  @media (prefers-reduced-motion: reduce) {
+    .door-half { transition: transform .35s linear; }
+  }
+  /* タイトル画面 */
+  #title-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--night);
+    overflow: hidden;
+    z-index: 20;
+  }
+  #title-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center top;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  #title-overlay.art-in #title-bg { opacity: 1; animation: bg-zoom 9s ease-out forwards; }
+  @keyframes bg-zoom { from { transform: scale(1.06); } to { transform: scale(1); } }
+  #title-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 10, 24, .30) 0%, rgba(10, 10, 24, .72) 55%, rgba(10, 10, 24, .90) 100%);
+    opacity: 0;
+    transition: opacity .9s ease;
+  }
+  #title-overlay.ready::before { opacity: 1; }
+  #title-overlay .card {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .8s ease, transform .8s ease;
+    pointer-events: none;
+  }
+  #title-overlay.ready .card {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  #title-overlay.hidden { display: none; }
+  @media (prefers-reduced-motion: reduce) {
+    #title-overlay.art-in #title-bg, #cutin.show::before, #cutin img { animation: none; }
+  }
+  .game-title {
+    position: relative;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: .3em;
+    background: linear-gradient(168deg, #f6e5ae 15%, #D9A94C 55%, #F0CE7E 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 14px rgba(240, 206, 126, .30)) drop-shadow(0 2px 6px rgba(0, 0, 0, .55));
+    text-wrap: balance;
+  }
+  .game-sub { font-size: 10px; letter-spacing: .15em; color: var(--ink-dim); margin-top: -6px; }
+  .story {
+    font-size: 12px;
+    line-height: 1.9;
+    letter-spacing: .06em;
+    color: var(--ink);
+    text-align: center;
+  }
+  .howto {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ink);
+    text-align: left;
+  }
+  .howto li::before { content: "〇 "; color: var(--kindei); }
+  #best-title { font-size: 10px; letter-spacing: .14em; color: var(--ink-dim); margin-top: -4px; }
+  #best-title em { font-style: normal; color: var(--moon); }
+  #start {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .25em;
+    color: var(--night);
+    background: var(--moon);
+    border: none;
+    border-radius: 6px;
+    padding: 14px 30px;
+    cursor: pointer;
+  }
+  #start:focus-visible { outline: 3px solid var(--moon); outline-offset: 2px; }
+  .sound-note { font-size: 10px; letter-spacing: .1em; color: var(--ink-dim); margin-top: -6px; }
+  #start-silent {
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: .15em;
+    color: var(--ink-dim);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 9px 18px;
+    cursor: pointer;
+  }
+  #start-silent:focus-visible { outline: 2px solid var(--moon); outline-offset: 2px; }
+  footer {
+    width: 100%;
+    text-align: center;
+    padding: 4px 12px 10px;
+    font-size: 9px;
+    letter-spacing: .1em;
+    color: var(--ink-dim);
+  }
+  footer a { color: var(--ink-dim); }
+  @media (max-width: 430px) {
+    h1 { font-size: 14px; letter-spacing: .08em; }
+    h1 small { font-size: 8px; letter-spacing: .12em; }
+    .stats { gap: 8px; }
+    .stat .value { font-size: 17px; }
+    #spirit-face { width: 32px; height: 32px; }
+    #mute { width: 30px; height: 30px; font-size: 14px; }
+    .card { padding: 26px 22px; }
+    .howto { font-size: 12px; }
+    .story { font-size: 11px; }
+    .game-title { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>式札かさね<small>SHIKIFUDA KASANE</small></h1>
+  <div class="stats">
+    <div class="stat">
+      <div class="label">段</div>
+      <div class="value" id="score">0</div>
+    </div>
+    <div class="stat">
+      <div class="label">BEST</div>
+      <div class="value" id="best">0</div>
+    </div>
+    <div class="spirit-now">
+      <div class="label">御霊</div>
+      <img id="spirit-face" alt="いまの御霊">
+    </div>
+    <button id="mute" aria-label="音の切り替え">♪</button>
+  </div>
+</header>
+<main>
+  <canvas id="game"></canvas>
+</main>
+<footer>『月蝕綺譚 -Luna Occulta-』二次創作（非公式ファンゲーム）／ © Studio VIBE のガイドラインに基づく</footer>
+
+<div id="title-overlay">
+  <div id="title-bg"></div>
+  <div class="card">
+    <div class="game-title">式札かさね</div>
+    <div class="game-sub">— 月蝕綺譚 -Luna Occulta- 二次創作 —</div>
+    <div id="best-title" hidden></div>
+    <div class="story">月が蝕まれる夜、境がほどける。<br>あるじどのは式札をひとつ、またひとつ重ね、<br>喰われた月への道を架ける。</div>
+    <ul class="howto">
+      <li>宵闇を往き来する式札を、タップでとどめて重ねる</li>
+      <li>ずれたぶんは夜に喰われ、札は細くなる</li>
+      <li>ぴったり重ねれば浄化——札は幅を取り戻す</li>
+      <li>八十段の高みで、満月に逢える</li>
+    </ul>
+    <button id="start">月夜に入る</button>
+    <div class="sound-note">※ 音が鳴ります（イヤホン推奨）</div>
+    <button id="start-silent">静かに入る — 音なし</button>
+  </div>
+</div>
+
+<div id="overlay">
+  <div class="card">
+    <div class="title">札は夜に呑まれた</div>
+    <div class="sub">重ねた道は、ここまで</div>
+    <img id="final-fuda" alt="到達した御霊の札絵">
+    <div>
+      <div id="final-title-label">称号</div>
+      <div id="final-title"></div>
+    </div>
+    <div>
+      <div class="score-label">重ねた段</div>
+      <div id="final-score">0<small>段</small></div>
+    </div>
+    <button id="retry">もう一夜</button>
+  </div>
+</div>
+
+<div id="cutin"><img id="cutin-img" alt="満月成就"></div>
+
+<div id="door" aria-hidden="true">
+  <div class="door-half door-l"><div class="door-band"></div></div>
+  <div class="door-half door-r"><div class="door-band"></div></div>
+</div>
+
+<script src="src/bgm.js"></script>
+<script src="src/assets.js"></script>
+<script src="src/faces.js"></script>
+<script src="src/game.js"></script>
+</body>
+</html>
