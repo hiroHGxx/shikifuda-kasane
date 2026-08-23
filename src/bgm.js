@@ -9,7 +9,7 @@ const KOTO_MAIN_DATA = "assets/audio/koto_pluck_main.m4a";
 const KOTO_HIGH_DATA = "assets/audio/koto_pluck_high.m4a";
 // 台詞: 公式公認のキャラボイス制作ルートで生成（fanworks/assets の「声のお約束」に基づき、
 // 公式の口調データ（get_spirit の voice.tone / samples）に沿って書き起こした）。
-// 鳴る場面は3つ: 開始（栞）／段替わりで去る御霊の労い／八十段の満願（栞）。
+// 鳴る場面は3つ: 開始（栞）／段替わりで新しく現れた御霊の名乗り／八十段の満願（栞）。
 // ぴったり浄化は琴の音のみ。
 // 餡音・弁天・宇迦・イズナ・咲耶 = 公式配布wavを参照音声に Irodori-TTS でクローン生成。
 // 於兎・紫苑・栞 = 公式指定の ElevenLabs Voice ID + 推奨タグで生成。

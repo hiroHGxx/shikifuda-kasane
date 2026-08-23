@@ -79,6 +79,28 @@
   let kotoMainBuf = null; // 実サンプル琴（単音・基音 KOTO_MAIN_HZ）
   let kotoHighBuf = null; // 実サンプル琴（高音の装飾フレーズ・固定ピッチ）
   const KOTO_MAIN_HZ = 196.5;
+  // 音素材のバイト列取得。data URI は fetch を使わず直接デコードする
+  // （Artifact ページの CSP が connect-src で data: への fetch を弾くため）
+  const byteCache = {};
+  function fetchBytes(url) {
+    if (byteCache[url]) return byteCache[url];
+    const p = url.startsWith("data:")
+      ? Promise.resolve().then(() => {
+          const bin = atob(url.slice(url.indexOf(",") + 1));
+          const arr = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+          return arr.buffer;
+        })
+      : fetch(url).then(r => r.arrayBuffer());
+    byteCache[url] = p;
+    return p;
+  }
+  // Pages版は開始ボタンを待たずに取り寄せ始める。開幕の栞の台詞は開始+0.35秒で
+  // 鳴るため、クリック時に取り始めると初回訪問では間に合わないことがある。
+  // （dataURI版=Artifactは復号が即時なので先読み不要。atobを遅延させたままにする）
+  if (!KOTO_MAIN_DATA.startsWith("data:")) {
+    [KOTO_MAIN_DATA, KOTO_HIGH_DATA, ...Object.values(VOICE_SRC)].forEach(fetchBytes);
+  }
   function initAudio() {
     if (!audioCtx) {
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -90,18 +112,7 @@
         voiceBus = audioCtx.createGain();
         voiceBus.gain.value = SFX_BUS; // 台詞の大きさは据え置き（旧: gain 1.0 × sfxBus 0.9）
         voiceBus.connect(audioCtx.destination);
-        // data URI は fetch を使わず直接デコードする
-        // （Artifact ページの CSP が connect-src で data: への fetch を弾くため）
-        const bytes = (url) => {
-          if (url.startsWith("data:")) {
-            const bin = atob(url.slice(url.indexOf(",") + 1));
-            const arr = new Uint8Array(bin.length);
-            for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-            return Promise.resolve(arr.buffer);
-          }
-          return fetch(url).then(r => r.arrayBuffer());
-        };
-        const load = (url, set) => bytes(url)
+        const load = (url, set) => fetchBytes(url)
           .then(ab => audioCtx.decodeAudioData(ab))
           .then(set)
           .catch(() => {});
@@ -113,8 +124,9 @@
       }
     }
   }
-  // 台詞: 開始（栞）・段替わり（去る御霊の労い）・満願（栞）の3場面で鳴る
+  // 台詞: 開始（栞）・段替わり（新しく現れた御霊の名乗り）・満願（栞）で鳴る
   const voiceBufs = {};
+  const activeVoices = new Set(); // ミュートで途中停止できるよう追跡する
   function voiceLine(key) {
     if (!audioCtx || !soundOn) return;
     const buf = voiceBufs[key];
@@ -125,6 +137,8 @@
     g.gain.value = 1.0; // 台詞は聞き取りやすさ優先で前に出す
     src.connect(g).connect(voiceBus);
     const t = audioCtx.currentTime + 0.02;
+    activeVoices.add(src);
+    src.onended = () => activeVoices.delete(src);
     src.start(t);
     duckSfx(t, buf.duration);
   }
@@ -290,6 +304,10 @@
   function applySound() {
     const btn = document.getElementById("mute");
     btn.classList.toggle("off", !soundOn);
+    if (!soundOn) { // 再生中の台詞も止める（BGMのpauseと揃える）
+      for (const src of activeVoices) { try { src.stop(); } catch (e) {} }
+      activeVoices.clear();
+    }
     if (started) {
       if (soundOn) bgm.play().catch(() => {});
       else bgm.pause();
@@ -463,7 +481,7 @@
       sfxSlice();
     }
     floors++;
-    if (floors > best) {
+    if (floors > best && !practice) { // 稽古の到達は誉れに残さない
       best = floors;
       try { localStorage.setItem("fudakasane_best", best); } catch (e) {}
     }
@@ -477,11 +495,8 @@
       const key = floors >= MOON_ZONE ? "shiori_arrive" : nsp.key;
       setTimeout(() => voiceLine(key), 450);
     }
-    if (floors === MOON_ZONE) {
-      addFloater(CX, floors * TH + 76, "栞の段", "#F0CE7E");
-      sfxMilestone(floors);
-      nextBellAt = performance.now() + 800;
-    }
+    // 栞の段のフローターと琴は上の段替わりブロックが出す（ここで重ねて出さない）
+    if (floors === MOON_ZONE) nextBellAt = performance.now() + 800;
     if (floors === MOON_FLOOR && !moonDone) {
       // 満月成就でその夜は終わり。カットイン→栞の満願の言葉→クリア画面の順で見せる
       moonDone = true;
@@ -538,7 +553,7 @@
   } catch (e) {}
 
   function showGameOver() {
-    saveBestTitle();
+    if (!practice) saveBestTitle(); // 稽古の到達は誉れに残さない
     // 満月成就なら道しるべの栞が締める。夜明けならそこまで導いた御霊を出す
     document.getElementById("result-card").classList.toggle("clear", cleared);
     document.getElementById("final-heading").textContent = cleared ? "満月成就" : "札は夜に呑まれた";
