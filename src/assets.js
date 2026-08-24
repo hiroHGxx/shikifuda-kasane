@@ -13,5 +13,3 @@ const FUDA_ART = {
   // 栞: 公式正典シートを参照にLovartで生成した札絵（ガイドラインの「正典シートをAIに読み込ませて創作OK」に基づく）
   shiori:   "assets/art/fuda_shiori.jpg",
 };
-// 満月成就の必殺カットイン（公式素材蔵・咲耶 正装）
-const CUTIN_ART = "assets/art/cutin_sakuya.webp";

@@ -492,7 +492,8 @@
     // 栞の段のフローターと琴は上の段替わりブロックが出す（ここで重ねて出さない）
     if (floors === MOON_ZONE) nextBellAt = performance.now() + 800;
     if (floors === MOON_FLOOR && !moonDone) {
-      // 満月成就でその夜は終わり。カットイン→栞の満願の言葉→クリア画面の順で見せる
+      // 満月成就でその夜は終わり。少し間を置いて栞の満願のページ（クリア画面）を開き、
+      // ページが出たところで栞が讃える
       moonDone = true;
       cleared = true;
       over = true;      // 入力も札の往き来も止める（夜明けとは別の終わり方）
@@ -500,9 +501,8 @@
       overAt = performance.now();
       addFloater(CX, floors * TH + 96, "満月成就", "#F0CE7E");
       goldBurst(ctrX, floors * TH, 40);
-      showCutin();
       sfxMoonFull();
-      setTimeout(() => voiceLine("shiori_goal"), 1500); // 栞が満願を讃える
+      setTimeout(() => voiceLine("shiori_goal"), 1500); // ページが開いた直後に栞の声
       updateSpiritFace();
       updateHud();
       sfxPlace();
@@ -512,16 +512,6 @@
     updateHud();
     sfxPlace();
     newSlab();
-  }
-
-  function showCutin() {
-    const box = document.getElementById("cutin");
-    const img = document.getElementById("cutin-img");
-    img.src = CUTIN_ART;
-    box.classList.remove("show");
-    void box.offsetWidth;
-    box.classList.add("show");
-    setTimeout(() => box.classList.remove("show"), 1750);
   }
 
   // ---- 称号の保存・表示 ----
@@ -917,8 +907,8 @@
       sfxBell();
       nextBellAt = now + 2600 + Math.random() * 900;
     }
-    // 夜明けはすぐ、満月成就はカットインと栞の満願の言葉が終わってから
-    if (over && overAt && now - overAt > (cleared ? 4600 : 950)) {
+    // 夜明けはすぐ、満月成就はほんの少し余韻を置いてから栞のページを開く
+    if (over && overAt && now - overAt > (cleared ? 1300 : 950)) {
       overAt = 0;
       showGameOver();
     }

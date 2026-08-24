@@ -53,7 +53,7 @@ python3 scripts/trim-voice.py <入力.mp3> <出力.wav>
 [二次創作ガイドライン](https://vibe.co.jp/luna-occulta/fanworks)および
 [CryptoNinja ガイドライン](https://www.ninja-dao.com/guidelines)に基づくファンメイド作品で、**公式とは関係ありません**。
 
-- **札絵・必殺カットイン**: 公式[素材蔵](https://vibe.co.jp/luna-occulta/fanworks/assets)配布の札絵（fuda）・必殺カットイン（cutin）を使用（「二次創作のゲーム・画像作品に組み込んでOK」のお約束に基づく）
+- **札絵**: 公式[素材蔵](https://vibe.co.jp/luna-occulta/fanworks/assets)配布の札絵（fuda）を使用（「二次創作のゲーム・画像作品に組み込んでOK」のお約束に基づく）
 - **栞の札絵**: 公式正典シートを参照資料として Lovart で生成（ガイドラインの「AIによるイラスト生成OK」「正典シートのAI利用OK」に基づく）
 - **御霊の顔アイコン**: 公式配布の顔アイコン（透過・全キャラ）を縮小して使用（`scripts/build-faces.sh` で再生成可）
 - **BGM**: 公式素材蔵配布のキャラクターソング「Freehand」（ネムのテーマ）を使用（「作品に組み込んで公開するのはOK」のお約束に基づく）。楽曲の単体利用・再配布はできません

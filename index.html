@@ -220,43 +220,6 @@
   }
   #mute.off { color: var(--ink-dim); text-decoration: line-through; }
   #mute:focus-visible { outline: 2px solid var(--moon); outline-offset: 2px; }
-  /* 満月成就カットイン（御霊おとしと同じ帯演出・絵は右向きなので左→右） */
-  #cutin {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 15;
-    pointer-events: none;
-    overflow: hidden;
-  }
-  #cutin.show { display: flex; }
-  #cutin::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 26vh;
-    height: 48vh;
-    background: linear-gradient(90deg, rgba(10, 10, 24, 0), rgba(10, 10, 24, .88) 10%, rgba(10, 10, 24, .88) 90%, rgba(10, 10, 24, 0));
-    animation: band-fade 1.7s ease forwards;
-  }
-  #cutin img {
-    position: relative;
-    width: min(94vw, 620px);
-    max-height: 46vh;
-    object-fit: contain;
-    filter: drop-shadow(0 0 44px rgba(242, 217, 140, .45));
-    animation: cutin-slide 1.7s cubic-bezier(.2, .8, .25, 1) forwards;
-  }
-  @keyframes cutin-slide {
-    0%   { transform: translateX(-125%) rotate(2deg); }
-    13%  { transform: translateX(0) rotate(2deg); }
-    80%  { transform: translateX(3%) rotate(2deg); }
-    100% { transform: translateX(140%) rotate(2deg); }
-  }
-  @keyframes band-fade { 0% { opacity: 0; } 10% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
   /* 帳（とばり）: 開幕に左右へ開く黒緞子の扉。本家の意匠に倣い、合わせ目に金襴の帯を通す */
   #door {
     position: fixed;
@@ -345,7 +308,7 @@
   }
   #title-overlay.hidden { display: none; }
   @media (prefers-reduced-motion: reduce) {
-    #title-overlay.art-in #title-bg, #cutin.show::before, #cutin img { animation: none; }
+    #title-overlay.art-in #title-bg { animation: none; }
   }
   .game-title {
     position: relative;
@@ -492,8 +455,6 @@
   </div>
 </div>
 
-<div id="cutin"><img id="cutin-img" alt="満月成就"></div>
-
 <div id="door" aria-hidden="true">
   <div class="door-half door-l"><div class="door-band"></div></div>
   <div class="door-half door-r"><div class="door-band"></div></div>
@@ -552,8 +513,6 @@ const FUDA_ART = {
   // 栞: 公式正典シートを参照にLovartで生成した札絵（ガイドラインの「正典シートをAIに読み込ませて創作OK」に基づく）
   shiori:   "assets/art/fuda_shiori.jpg",
 };
-// 満月成就の必殺カットイン（公式素材蔵・咲耶 正装）
-const CUTIN_ART = "assets/art/cutin_sakuya.webp";
 
 </script>
 <script>
@@ -1069,7 +1028,8 @@ const FACE_DATA = {
     // 栞の段のフローターと琴は上の段替わりブロックが出す（ここで重ねて出さない）
     if (floors === MOON_ZONE) nextBellAt = performance.now() + 800;
     if (floors === MOON_FLOOR && !moonDone) {
-      // 満月成就でその夜は終わり。カットイン→栞の満願の言葉→クリア画面の順で見せる
+      // 満月成就でその夜は終わり。少し間を置いて栞の満願のページ（クリア画面）を開き、
+      // ページが出たところで栞が讃える
       moonDone = true;
       cleared = true;
       over = true;      // 入力も札の往き来も止める（夜明けとは別の終わり方）
@@ -1077,9 +1037,8 @@ const FACE_DATA = {
       overAt = performance.now();
       addFloater(CX, floors * TH + 96, "満月成就", "#F0CE7E");
       goldBurst(ctrX, floors * TH, 40);
-      showCutin();
       sfxMoonFull();
-      setTimeout(() => voiceLine("shiori_goal"), 1500); // 栞が満願を讃える
+      setTimeout(() => voiceLine("shiori_goal"), 1500); // ページが開いた直後に栞の声
       updateSpiritFace();
       updateHud();
       sfxPlace();
@@ -1089,16 +1048,6 @@ const FACE_DATA = {
     updateHud();
     sfxPlace();
     newSlab();
-  }
-
-  function showCutin() {
-    const box = document.getElementById("cutin");
-    const img = document.getElementById("cutin-img");
-    img.src = CUTIN_ART;
-    box.classList.remove("show");
-    void box.offsetWidth;
-    box.classList.add("show");
-    setTimeout(() => box.classList.remove("show"), 1750);
   }
 
   // ---- 称号の保存・表示 ----
@@ -1494,8 +1443,8 @@ const FACE_DATA = {
       sfxBell();
       nextBellAt = now + 2600 + Math.random() * 900;
     }
-    // 夜明けはすぐ、満月成就はカットインと栞の満願の言葉が終わってから
-    if (over && overAt && now - overAt > (cleared ? 4600 : 950)) {
+    // 夜明けはすぐ、満月成就はほんの少し余韻を置いてから栞のページを開く
+    if (over && overAt && now - overAt > (cleared ? 1300 : 950)) {
       overAt = 0;
       showGameOver();
     }

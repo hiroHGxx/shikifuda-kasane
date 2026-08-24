@@ -220,43 +220,6 @@
   }
   #mute.off { color: var(--ink-dim); text-decoration: line-through; }
   #mute:focus-visible { outline: 2px solid var(--moon); outline-offset: 2px; }
-  /* 満月成就カットイン（御霊おとしと同じ帯演出・絵は右向きなので左→右） */
-  #cutin {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 15;
-    pointer-events: none;
-    overflow: hidden;
-  }
-  #cutin.show { display: flex; }
-  #cutin::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 26vh;
-    height: 48vh;
-    background: linear-gradient(90deg, rgba(10, 10, 24, 0), rgba(10, 10, 24, .88) 10%, rgba(10, 10, 24, .88) 90%, rgba(10, 10, 24, 0));
-    animation: band-fade 1.7s ease forwards;
-  }
-  #cutin img {
-    position: relative;
-    width: min(94vw, 620px);
-    max-height: 46vh;
-    object-fit: contain;
-    filter: drop-shadow(0 0 44px rgba(242, 217, 140, .45));
-    animation: cutin-slide 1.7s cubic-bezier(.2, .8, .25, 1) forwards;
-  }
-  @keyframes cutin-slide {
-    0%   { transform: translateX(-125%) rotate(2deg); }
-    13%  { transform: translateX(0) rotate(2deg); }
-    80%  { transform: translateX(3%) rotate(2deg); }
-    100% { transform: translateX(140%) rotate(2deg); }
-  }
-  @keyframes band-fade { 0% { opacity: 0; } 10% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
   /* 帳（とばり）: 開幕に左右へ開く黒緞子の扉。本家の意匠に倣い、合わせ目に金襴の帯を通す */
   #door {
     position: fixed;
@@ -345,7 +308,7 @@
   }
   #title-overlay.hidden { display: none; }
   @media (prefers-reduced-motion: reduce) {
-    #title-overlay.art-in #title-bg, #cutin.show::before, #cutin img { animation: none; }
+    #title-overlay.art-in #title-bg { animation: none; }
   }
   .game-title {
     position: relative;
@@ -491,8 +454,6 @@
     <button id="retry">もう一夜</button>
   </div>
 </div>
-
-<div id="cutin"><img id="cutin-img" alt="満月成就"></div>
 
 <div id="door" aria-hidden="true">
   <div class="door-half door-l"><div class="door-band"></div></div>
