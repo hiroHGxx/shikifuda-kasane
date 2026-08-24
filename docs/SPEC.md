@@ -95,10 +95,17 @@ node scripts/playtest.js             # → /tmp/kasane-*.png・全✅で exit 0
 - **Chrome の `--virtual-time-budget` では進まない**（rAF 駆動のゲームループが仮想時間で回らず、0段のまま撮れてしまう）。puppeteer で実時間待ちにすること。**タブがバックグラウンドでも rAF が止まる**ので、実ブラウザのタブで放置検証もできない
 - 夜明け側の確認は `#autocut`（わざと40pxずらすので数段で終わる）
 
-## 10. 配信
+## 10. 配信・宣伝
 
 - 開発プレビュー: Claude Artifact `92054db4-c1ff-4073-a4d2-87e522d2ca8a`
 - ボイス帖（試聴用）: Claude Artifact `c7500fd9-fb59-4d3e-8c13-91108370e2a6`
 - GitHub: https://github.com/hiroHGxx/shikifuda-kasane （main / ルートから Pages 配信）
 - 公開URL: https://hirohgxx.github.io/shikifuda-kasane/
-- わいわいタウン: **未掲載**（サムネ640×640・プレビュー動画15秒以内が要る）
+- **わいわいタウン: 掲載済み（2026-08-24）** https://waiwai.town/apps/shikifuda-kasane
+  （IP=クリプトニンジャ・ジャンル=アクション・みんな向け・サイト内プレイ可）
+- **OGP**: `ogp.png`（1200×600・栞＋御霊の階梯）＋metaタグ設定済み。ソースは `scripts/ogp-card.html`。
+  X はカードキャッシュの都合で出ないことがある（対処はURLに `?v=1` 等を付けて別URL扱いにする）
+- **PV**: `scripts/pv/` 一式で再生成可。撮影は `#autowobble`（本番ルールで中くらいに細らせる）、
+  サムネ用は `nofloat` 付きハッシュで文字を消す。クリア画面はPVでは見せない方針
+  （72段の栞「最後のページは、わたくしが」で引きを作る）
+- X告知: 2026-08-24 投稿済み（メイン=PV添付・リンクはリプ欄）
