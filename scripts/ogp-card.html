@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<style>
+  /* 1200x600 (2:1) OGP カード。背景は栞の札絵（Lovart生成）。
+     書き出し: Chrome ヘッドレス --window-size=1200,600 --force-device-scale-factor=2 */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px;
+    height: 600px;
+    overflow: hidden;
+    position: relative;
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+    color: #E8E4D8;
+    background: #131320;
+  }
+  .bg {
+    position: absolute;
+    inset: 0;
+    background: url("../assets/art/fuda_shiori.jpg") 82% 20% / cover no-repeat;
+  }
+  .veil {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(13, 13, 26, .88) 0%, rgba(13, 13, 26, .62) 38%, rgba(13, 13, 26, .08) 66%);
+  }
+  .content { position: absolute; left: 72px; top: 112px; }
+  .eyebrow {
+    font-size: 21px;
+    letter-spacing: .26em;
+    color: #9D93B5;
+    margin-bottom: 18px;
+    white-space: nowrap;
+    text-shadow: 0 1px 8px rgba(0,0,0,.8);
+  }
+  h1 {
+    font-size: 104px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    line-height: 1.1;
+    white-space: nowrap;
+    background: linear-gradient(168deg, #f6e5ae 15%, #D9A94C 55%, #F0CE7E 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 26px rgba(240,206,126,.4)) drop-shadow(0 3px 10px rgba(0,0,0,.7));
+  }
+  .tagline {
+    margin-top: 20px;
+    font-size: 29px;
+    letter-spacing: .12em;
+    white-space: nowrap;
+    text-shadow: 0 1px 8px rgba(0,0,0,.85);
+  }
+  .ladder {
+    position: absolute;
+    left: 72px;
+    bottom: 64px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ladder img {
+    border-radius: 50%;
+    border: 3px solid;
+    background: #1B1B2E;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(0,0,0,.6);
+  }
+  .ladder .arrow { color: #9D93B5; font-size: 17px; flex-shrink: 0; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+  .ladder .fullmoon {
+    border-radius: 50%;
+    border: 3px solid #F0CE7E;
+    background: radial-gradient(circle at 35% 35%, #fff3c8, #e8c96a);
+    flex-shrink: 0;
+    box-shadow: 0 0 18px rgba(242,217,140,.7);
+  }
+  .credit {
+    position: absolute;
+    right: 36px;
+    bottom: 24px;
+    font-size: 17px;
+    letter-spacing: .08em;
+    color: #9D93B5;
+    white-space: nowrap;
+    text-shadow: 0 1px 6px rgba(0,0,0,.9);
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="veil"></div>
+  <div class="content">
+    <div class="eyebrow">『月蝕綺譚 -Luna Occulta-』二次創作ファンゲーム</div>
+    <h1>式札かさね</h1>
+    <div class="tagline">式札を重ね、喰われた月への道を架けよう。</div>
+  </div>
+  <div class="ladder" id="ladder"></div>
+  <div class="credit">非公式 / © Studio VIBE のガイドラインに基づく</div>
+  <script>
+    // 御霊の階梯（ゲームの段順・五行色）。アイコンは公式配布の顔アイコン（透過）
+    const chars = [
+      ["anne", "#6FB069"], ["oto", "#C08A3E"], ["nemu", "#5FB4D9"], ["nekomata", "#C6BFA8"],
+      ["benten", "#5FB4D9"], ["uka", "#E0562F"], ["izuna", "#C6BFA8"], ["shion", "#6FB069"],
+      ["sakuya", "#E0562F"], ["shiori", "#F0CE7E"],
+    ];
+    const box = document.getElementById("ladder");
+    chars.forEach(([n, c], i) => {
+      const img = document.createElement("img");
+      img.src = "https://vibe.co.jp/luna-occulta/media/img/canon/" + n + "_icon.webp";
+      const size = 40 + i * 4;
+      img.style.width = img.style.height = size + "px";
+      img.style.borderColor = c;
+      box.appendChild(img);
+      const a = document.createElement("span");
+      a.className = "arrow";
+      a.textContent = "▸";
+      box.appendChild(a);
+    });
+    const m = document.createElement("div");
+    m.className = "fullmoon";
+    m.style.width = m.style.height = "86px";
+    box.appendChild(m);
+  </script>
+</body>
+</html>
