@@ -1,3 +1,7 @@
 dist/
 .DS_Store
 node_modules/
+scripts/pv/frames/
+scripts/pv/*.png
+scripts/pv/*.mp4
+scripts/pv/events.json

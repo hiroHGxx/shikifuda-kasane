@@ -939,7 +939,9 @@ const FACE_DATA = {
       });
     }
   }
+  const noFloat = location.hash.includes("nofloat"); // サムネ撮影用: 文字を出さない
   function addFloater(sx, wy, text, color) {
+    if (noFloat) return;
     floaters.push({ sx, wy, text, color, life: 1 });
   }
 
@@ -1400,7 +1402,18 @@ const FACE_DATA = {
   // ---- ループ ----
   const autotest = location.hash === "#autotest" || location.hash === "#autotest-sound";
   const autocut = location.hash === "#autocut"; // わざと少しずらして置く（切断面の確認用）
-  if (autotest || autocut) setTimeout(() => begin(location.hash === "#autotest-sound"), 600);
+  // PV素材用: 本番ルールのまま、序盤はぴったり・中盤にかけて少しずつ欠けさせて
+  // 「札が細っていく」画を作る自動プレイ。中くらいの細さで落ち着き、72段まで届く
+  const autowobble = location.hash.startsWith("#autowobble"); // "-nofloat"等の付加を許す
+  let wobble = 0;
+  function nextWobble() {
+    if (floors < 6) return 0;                    // 序盤は気持ちよくぴったり
+    if (floors < 32) return Math.random() < 0.5 ? 0
+      : (Math.random() < 0.5 ? -1 : 1) * (9 + Math.random() * 8);   // 8〜17pxの欠け
+    return Math.random() < 0.8 ? 0
+      : (Math.random() < 0.5 ? -1 : 1) * (8 + Math.random() * 4);   // 以降はたまに小さく
+  }
+  if (autotest || autocut || autowobble) setTimeout(() => begin(location.hash === "#autotest-sound"), 600);
   let last = performance.now();
   function loop(now) {
     const dt = Math.min(now - last, 33) / 1000;
@@ -1414,6 +1427,7 @@ const FACE_DATA = {
       slab[a] = slab.pos;
       if (autotest && Math.abs(slab.pos - top[a]) < 5) place();
       if (autocut && Math.abs(slab.pos - top[a] - 40) < 5) place();
+      if (autowobble && Math.abs(slab.pos - (top[a] + wobble)) < 5) { place(); wobble = nextWobble(); }
     }
     const camTarget = Math.max(0, floors * TH - 300);
     camY += (camTarget - camY) * Math.min(1, dt * 6);
