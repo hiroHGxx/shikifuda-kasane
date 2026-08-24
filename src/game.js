@@ -338,16 +338,10 @@
   }
 
   function updateSpiritFace() {
+    // 公式配布の顔アイコン(透過)。栞も揃っているので全キャラ FACE_DATA で出す
     const sp = spiritForLayer(floors);
     const el = document.getElementById("spirit-face");
-    if (FACE_DATA[sp.key]) {
-      el.src = FACE_DATA[sp.key];
-      el.style.objectPosition = "";
-    } else {
-      // 栞はちび顔素材が無いので札絵の顔まわりをそのまま使う
-      el.src = FUDA_ART[sp.key];
-      el.style.objectPosition = "50% 12%";
-    }
+    el.src = FACE_DATA[sp.key];
     el.style.borderColor = sp.color;
   }
 
