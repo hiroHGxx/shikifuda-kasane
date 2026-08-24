@@ -30,7 +30,7 @@
 ## 制作環境
 
 ### Irodori-TTS（無料・ローカル）
-- 導入先: `Products/game/tools/Irodori-TTS`（uv・MPS動作。1本4〜8秒）
+- 導入先: `Products/kitan-works/tools/Irodori-TTS`（uv・MPS動作。1本4〜8秒）
 - 実行例:
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
@@ -102,7 +102,7 @@ Irodori の場合、「声を選ぶ」＝「参照 wav を選ぶ」。参照 wav
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
-cd Products/game/tools/Irodori-TTS
+cd Products/kitan-works/tools/Irodori-TTS
 uv run --no-sync python -c "
 from transformers import pipeline
 asr = pipeline('automatic-speech-recognition', model='openai/whisper-small', device='mps')
