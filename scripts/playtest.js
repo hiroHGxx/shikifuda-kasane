@@ -1,5 +1,6 @@
-// 式札かさね 通し検証。80段クリア(#autotest)・夜明け(#autocut)・稽古（記録が残らないこと）を
-// 実時間の自動プレイで確認し、結果画面の状態とスクリーンショットを吐く。
+// 式札かさね 通し検証。80段クリア(#autotest)・夜明け(#autocut)・稽古（記録が残らないこと）・
+// 自動プレイと稽古が全国ランキングへ送らないことを、実時間の自動プレイで確認し、
+// 結果画面の状態とスクリーンショットを吐く。
 //
 // 使い方:
 //   npm i --no-save puppeteer-core   # 初回のみ（リポジトリには残さない）
@@ -40,7 +41,28 @@ async function run(base, hash, opts) {
   await page.setViewport({ width: 480, height: 860 });
   const errors = [];
   page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
-  page.on("console", (m) => { if (m.type() === "error") errors.push("console: " + m.text()); });
+  page.on("console", (m) => {
+    // 外部の sdk.js（waiwai.town）は取れなくてよい。取れないことを織り込んだ作りなので、
+    // ネットワーク由来の失敗を検証の赤にしない（本体の誤りだけを見る）。
+    if (m.type() === "error" && !/sdk\.js|ERR_(CONNECTION|NAME|INTERNET|NETWORK)/.test(m.text())) {
+      errors.push("console: " + m.text());
+    }
+  });
+  // 全国ランキングへの送信を数える。稽古と自動プレイからは1回も呼ばれてはいけない
+  // （#autotest は全段ぴったり＝理論最大値。塞がないと検証のたびに本番の番付が汚れる）。
+  await page.evaluateOnNewDocument(() => {
+    window.__submits = [];
+    Object.defineProperty(window, "waiwai", { configurable: true, value: {
+      mode: "bridged",
+      load: () => Promise.resolve(null),
+      // 本物のSDKが standalone で置くのと同じ場所に書く（記録が残ることまで検証で見るため）
+      save: (k, v) => { try { localStorage.setItem("waiwai:" + k, JSON.stringify(v)); } catch (e) {} return Promise.resolve(true); },
+      submitScore: (b, sc, meta) => { window.__submits.push([b, sc, meta]); return Promise.resolve({ ok: true, best: sc, rank: 1, improved: true }); },
+      getMyScore: () => Promise.resolve(null),
+      getTopScores: () => Promise.resolve({ entries: [{ rank: 1, name: "ヒロ", score: sc0() }], total: 1 }),
+    } });
+    function sc0() { return 8080; }
+  });
   const t0 = Date.now();
   await page.goto(base + hash, { waitUntil: "load" });
   if (opts.practice) {
@@ -61,8 +83,10 @@ async function run(base, hash, opts) {
     quoteShown: !document.getElementById("final-quote").hidden,
     clearCard: document.getElementById("result-card").classList.contains("clear"),
     fuda: (document.getElementById("final-fuda").src.match(/fuda_\w+/) || [""])[0],
-    storedBest: localStorage.getItem("fudakasane_best"),
-    storedTitle: localStorage.getItem("fudakasane_title"),
+    // 記録は1キーの束（SPEC §7-a）。SDKが読めているときは waiwai: 接頭辞つきで置かれる
+    saved: localStorage.getItem("waiwai:fudakasane_save") || localStorage.getItem("fudakasane_save"),
+    legacyBest: localStorage.getItem("fudakasane_best"),
+    submits: window.__submits.length,
   }));
   await page.screenshot({ path: opts.shot });
   await browser.close();
@@ -78,9 +102,11 @@ async function run(base, hash, opts) {
     if (!ok) failed = true;
   };
 
+  const saved = (s) => { try { return JSON.parse(s.saved || "null"); } catch (e) { return null; } };
+
   const clear = await run(base, "#autotest", { timeout: 120000, shot: "/tmp/kasane-clear.png" });
   check("満月成就", clear.state.floors === "80" && clear.state.clearCard && clear.state.quoteShown
-    && clear.state.fuda === "fuda_shiori" && clear.state.storedTitle === "満月成就"
+    && clear.state.fuda === "fuda_shiori" && (saved(clear.state) || {}).title === "満月成就"
     && clear.errors.length === 0, clear);
 
   const over = await run(base, "#autocut", { timeout: 60000, shot: "/tmp/kasane-over.png" });
@@ -88,9 +114,17 @@ async function run(base, hash, opts) {
     && over.state.heading === "札は夜に呑まれた" && over.errors.length === 0, over);
 
   const prac = await run(base, "#autotest", { timeout: 120000, shot: "/tmp/kasane-practice.png", practice: true });
+  // 稽古でも音の好み（begin の2択）は束に書かれる。それは記録ではなく好みなので構わない。
+  // 見るのは「到達が残っていないこと」＝ best と称号が空のまま、旧キーも生えていないこと。
+  const pracSaved = saved(prac.state) || { best: 0, title: "" };
   check("稽古は記録を残さない", prac.state.floors === "80" && prac.state.hudBest === "0"
-    && prac.state.storedBest === null && prac.state.storedTitle === null
+    && pracSaved.best === 0 && !pracSaved.title && prac.state.legacyBest === null
     && prac.errors.length === 0, prac);
+
+  // 自動プレイ（本番ルールで動く）と稽古から、全国ランキングへ1回も送っていないこと
+  check("番付を汚さない（自動プレイ・稽古から送信0回）",
+    clear.state.submits === 0 && over.state.submits === 0 && prac.state.submits === 0,
+    { 満月成就: clear.state.submits, 夜明け: over.state.submits, 稽古: prac.state.submits });
 
   srv.close();
   process.exit(failed ? 1 : 0);

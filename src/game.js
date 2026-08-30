@@ -523,7 +523,12 @@
   let layers = [];                        // {x, z, w, d, sp}
   let top = { x: -F0 / 2, z: -F0 / 2, w: F0, d: F0 };
   let slab = null;                        // {axis, pos, x, z, w, d, dir, speed}
+  // 自動プレイのハッシュ。**これらは稽古ではなく本番ルールで動く**ので、
+  // 全国ランキングへの送信は必ずここで塞ぐ（#autotest は全段ぴったり＝理論最大値になる）。
+  const autotest = location.hash === "#autotest" || location.hash === "#autotest-sound";
+  const autowobble = location.hash.startsWith("#autowobble"); // "-nofloat"等の付加を許す
   let streak = 0;
+  let purifyTotal = 0; // その夜の浄化の通算（streak は連続数で、ずれると0に戻るので別に数える）
   let camY = 0;
   let pausedUntil = 0;
   let moonDone = false;
@@ -592,6 +597,7 @@
     if (Math.abs(offset) <= PERFECT_TOL) {
       // ぴったり: 浄化
       streak++;
+      purifyTotal++;
       let nw = top.w, nd = top.d, nx = top.x, nz = top.z;
       if (streak >= 5) {
         // 本家準拠: 長い連続ぴったりのご褒美として、わずかに幅を取り戻す
@@ -676,6 +682,225 @@
     newSlab();
   }
 
+  // ---- わいわいタウン 全国ランキング・番付（あってもなくても遊びは変わらない） ----
+  // SDK は page.html の外部スクリプトで読む。タウンの中（iframe）＝全国ランキングに載る／
+  // タウンの外（GitHub Pages 等）＝SDK がこのブラウザだけの自己ベスト保持に自動で落ちる／
+  // CSP で読めない（Claude Artifact）＝window.waiwai がそもそも無い。
+  // **どの場合も結果カードは今までどおり出る**のが最優先。
+  //
+  // 送るスコアは合成値 `段 * 100 + その夜の浄化の通算`（2026-08-30 企画裁定）。
+  // 本作は80段で上限＝段だけでは到達者が全員同点になるため、この遊びが最初から測っている
+  // 「ぴったり重ねる」を従の軸に畳む。浄化回数 ≦ 段数 ≦ 80 < 100 なので、
+  // 段が1つ違えば浄化では絶対に逆転しない（桁あふれは構造上起きない・理論最大 8080）。
+  // 番付の行は score から段と浄化を復元して出す（getTopScores は meta を返さないため）。
+  const RANK_BOARD = "main";
+  const RANK_TIMEOUT_MS = 2500; // SDK自身は握手2秒＋要求5秒待つ。結果カードを付き合わせない
+  const BANZUKE_LIMIT = 10;     // 番付に載せる上位の人数
+  const RANK_SCALE = 100;       // 合成スコアの桁（段 * RANK_SCALE + 浄化）
+  let nightId = 0; // 「もう一夜」ごとに増える。応答が返ったとき、まだ同じ夜かを見る印
+
+  const composeScore = (fl, pure) => fl * RANK_SCALE + Math.min(pure, RANK_SCALE - 1);
+  const rankNum = (v) => (typeof v === "number" && isFinite(v) && v > 0 ? Math.floor(v) : null);
+  const scoreNum = (v) => (typeof v === "number" && isFinite(v) && v >= 0 ? Math.floor(v) : null);
+
+  // 呼び出しは必ずここを通す。例外・拒否・無応答のどれでも null を返し、握りつぶさず warn は残す。
+  function waiwaiCall(fn, label) {
+    if (!window.waiwai) return Promise.resolve(null);
+    return waiwaiTry(fn, label, RANK_TIMEOUT_MS).then((r) => (r.ok ? r.value : null));
+  }
+
+  const rankEls = {
+    box: document.getElementById("final-rank"),
+    mark: document.getElementById("final-rank-mark"),
+    line: document.getElementById("final-rank-line"),
+  };
+  const bzEls = {
+    box: document.getElementById("banzuke"),
+    close: document.getElementById("bz-close"),
+    sub: document.getElementById("bz-sub"),
+    list: document.getElementById("bz-list"),
+    gap: document.getElementById("bz-gap"),
+    me: document.getElementById("bz-me"),
+  };
+  const banzuke = { entries: null, total: null, myRank: null, myScore: null };
+
+  // 相手の応答は他人が入れた名前を含むので、必ず textContent で置く（innerHTML を使わない）。
+  // 形が崩れている項目は静かに捨てる（1件も残らなければ entries は null ＝入口を出さない）。
+  function normalizeEntries(list) {
+    if (!Array.isArray(list)) return null;
+    const out = [];
+    for (const e of list) {
+      if (!e || typeof e !== "object") continue;
+      const rank = rankNum(e.rank);
+      const score = scoreNum(e.score);
+      if (rank === null || score === null) continue;
+      const raw = typeof e.name === "string" ? e.name.trim() : "";
+      out.push({ rank: rank, name: (raw || "ナナシ").slice(0, 20), score: score });
+      if (out.length >= BANZUKE_LIMIT) break;
+    }
+    out.sort((a, b) => a.rank - b.rank);
+    return out.length ? out : null;
+  }
+
+  function bzRow(rank, name, score, isMe) {
+    const li = document.createElement("li");
+    li.className = "bz-row" + (rank <= 3 ? " top" : "") + (isMe ? " me" : "");
+    if (isMe) li.setAttribute("aria-current", "true");
+    const r = document.createElement("span");
+    r.className = "bz-rank";
+    r.textContent = rank;
+    const n = document.createElement("span");
+    n.className = "bz-name";
+    n.textContent = name;
+    const sc = document.createElement("span");
+    sc.className = "bz-score";
+    sc.textContent = Math.floor(score / RANK_SCALE) + "段";
+    const sm = document.createElement("small");
+    sm.textContent = "（浄化" + (score % RANK_SCALE) + "）";
+    sc.appendChild(sm);
+    li.appendChild(r);
+    li.appendChild(n);
+    li.appendChild(sc);
+    return li;
+  }
+
+  function renderBanzuke() {
+    const rows = banzuke.entries || [];
+    bzEls.list.textContent = "";
+    const inList = banzuke.myRank !== null && rows.some((e) => e.rank === banzuke.myRank);
+    for (const e of rows) bzEls.list.appendChild(bzRow(e.rank, e.name, e.score, e.rank === banzuke.myRank));
+    // 上位に居ない夜だけ、間を空けて自分の行を下に足す（居るときは二重に出さない）
+    bzEls.me.textContent = "";
+    const showMe = !inList && banzuke.myRank !== null && banzuke.myScore !== null;
+    if (showMe) bzEls.me.appendChild(bzRow(banzuke.myRank, "あなた", banzuke.myScore, true));
+    bzEls.me.hidden = !showMe;
+    bzEls.gap.hidden = !showMe;
+    if (banzuke.total !== null) {
+      bzEls.sub.textContent = "";
+      bzEls.sub.appendChild(document.createTextNode("全国 "));
+      const em = document.createElement("em");
+      em.textContent = banzuke.total;
+      bzEls.sub.appendChild(em);
+      bzEls.sub.appendChild(document.createTextNode("人"));
+      bzEls.sub.hidden = false;
+    } else {
+      bzEls.sub.hidden = true;
+    }
+  }
+
+  function openBanzuke() {
+    if (!banzuke.entries) return; // 控えが無いのに開かない（入口も出ていないはずだが念のため）
+    renderBanzuke();
+    bzEls.box.classList.add("show");
+  }
+  function closeBanzuke() {
+    bzEls.box.classList.remove("show");
+  }
+  bzEls.close.addEventListener("click", closeBanzuke);
+  bzEls.box.addEventListener("click", (e) => { if (e.target === bzEls.box) closeBanzuke(); });
+
+  function clearRankUI() {
+    rankEls.box.hidden = true;
+    rankEls.mark.hidden = true;
+    rankEls.line.hidden = true;
+    rankEls.line.textContent = "";
+    banzuke.entries = null;
+    banzuke.total = null;
+    banzuke.myRank = null;
+    banzuke.myScore = null;
+    closeBanzuke();
+  }
+
+  // 取れたものだけ出す。取れなかった行は出さない（「取得できませんでした」も出さない）
+  function showRankUI(rank, total, improved, entries, myScore) {
+    let any = false;
+    if (improved) {
+      rankEls.mark.hidden = false;
+      any = true;
+    }
+    if (rank !== null) {
+      rankEls.line.textContent = "";
+      // 上位の顔ぶれまで取れた夜だけ、行を釦で包んで番付への入口にする。
+      // 取れていなければ素の span のまま＝入口ごと存在しない。
+      const canOpen = entries !== null;
+      const holder = document.createElement(canOpen ? "button" : "span");
+      if (canOpen) {
+        holder.type = "button";
+        holder.className = "rank-open";
+        holder.setAttribute("aria-label", "番付を見る");
+        holder.addEventListener("click", openBanzuke);
+        banzuke.entries = entries;
+        banzuke.total = total;
+        banzuke.myRank = rank;
+        banzuke.myScore = myScore;
+      }
+      const em = document.createElement("em");
+      em.textContent = rank;
+      holder.appendChild(document.createTextNode("全国 "));
+      holder.appendChild(em);
+      holder.appendChild(document.createTextNode(
+        " 位" + (total !== null && total >= rank ? " ／ " + total + "人中" : "")
+      ));
+      if (canOpen) {
+        const mark = document.createElement("span");
+        mark.className = "rank-open-mark";
+        mark.setAttribute("aria-hidden", "true");
+        mark.textContent = "›";
+        holder.appendChild(mark);
+      }
+      rankEls.line.appendChild(holder);
+      rankEls.line.hidden = false;
+      any = true;
+    }
+    rankEls.box.hidden = !any;
+  }
+
+  // 応答の形（御霊おとしが2026-08-29に sdk.js と親側 static/play-score.js の実装で確認）:
+  //   submitScore  タウン内 { ok, best, rank, improved } / タウン外 { ok, best, local:true, improved }
+  //   getTopScores タウン内 { entries, total }           / タウン外 { entries, local:true }（total なし）
+  //   getMyScore   タウン外 { best, local:true } または null（タウン内の非 null の形は未確認）
+  // 順位は submitScore の rank を正本にする。getMyScore は rank が取れなかったときの保険で、
+  // 形が未確認なので「数でなければ捨てる」読み方しかしない。
+  async function reportScore(sentScore, title, myNight) {
+    if (!window.waiwai) {
+      // 画面には何も出さないが、記録には残す。「静かに失敗して誰も気づかない」を作らないため
+      console.warn("[waiwai] SDK が読めていないので全国順位は出さない（Artifact の CSP・読み込み失敗など）");
+      return;
+    }
+    const res = await waiwaiCall(
+      () => window.waiwai.submitScore(RANK_BOARD, sentScore, { title: title }),
+      "submitScore"
+    );
+    if (nightId !== myNight) return; // もう次の夜が始まっている
+    if (!res) return;                // 送れていない＝順位も総数も名乗らない
+    let rank = rankNum(res.rank);
+    const improved = res.improved === true;
+    if (rank === null && !res.local) {
+      const mine = await waiwaiCall(() => window.waiwai.getMyScore(RANK_BOARD), "getMyScore");
+      if (nightId !== myNight) return;
+      if (mine) rank = rankNum(mine.rank);
+    }
+    // 総数と番付の顔ぶれは同じ1回で取る（結果カードの「◯人中」と番付の中身は同じ応答の別の欄）。
+    // 押してから取りにいかない＝開くのを待たせないし、押してから失敗する経路も生えない。
+    let total = null;
+    let entries = null;
+    if (rank !== null) {
+      const top = await waiwaiCall(
+        () => window.waiwai.getTopScores(RANK_BOARD, BANZUKE_LIMIT),
+        "getTopScores"
+      );
+      if (nightId !== myNight) return;
+      if (top) {
+        total = rankNum(top.total);
+        entries = normalizeEntries(top.entries);
+        if (entries === null) console.warn("[waiwai] 上位の顔ぶれが読めなかったので番付への入口は出さない");
+      }
+    }
+    // 順位は自己ベストに対して付くので、自分の行に出す点も送信の応答が返した best を優先する
+    const myScore = scoreNum(res.best) !== null ? scoreNum(res.best) : scoreNum(sentScore);
+    showRankUI(rank, total, improved, entries, myScore);
+  }
+
   // ---- 称号の保存・表示 ----
   function saveBestTitle() {
     if (floors > saveData.titleRank) {
@@ -696,7 +921,13 @@
     el.append(em);
   }
 
+  // 全国ランキングへ送ってよい夜か。稽古（practice）は記録に残さない従来の決めごとどおり。
+  // 自動プレイ（#autotest / #autocut / #autowobble）は**稽古ではなく本番ルールで動く**ため、
+  // 塞がないと検証やPV撮影のたびに本番の番付が汚れる。
+  const canSubmitScore = () => !practice && !autotest && !autocut && !autowobble;
+
   function showGameOver() {
+    clearRankUI(); // 前の夜の順位を残さない
     if (!practice) {
       saveBestTitle(); // 稽古の到達は誉れに残さない
       persistSave();   // best と称号をまとめて1回。await しない（カードを待たせない）
@@ -717,6 +948,13 @@
     fudaEl.alt = reached.name + "の札絵";
     fudaEl.style.display = "block";
     document.getElementById("overlay").classList.add("show");
+    // 記録を確定したあとに送る。await しない＝結果カードの表示も「もう一夜」も待たせない
+    if (canSubmitScore()) {
+      reportScore(composeScore(floors, purifyTotal), titleFor(floors), nightId).catch((e) => {
+        // ここに落ちるのは想定外（waiwaiCall は reject しない）。unhandledrejection にはしない
+        console.warn("[waiwai] 順位の表示でつまずいた", e);
+      });
+    }
   }
 
   function restart() {
@@ -726,6 +964,9 @@
     layers = [];
     top = { x: -F0 / 2, z: -F0 / 2, w: F0, d: F0 };
     streak = 0;
+    purifyTotal = 0;
+    nightId++;       // 遅れて返った前の夜の順位が、次の夜のカードに出るのを塞ぐ印
+    clearRankUI();   // 前の夜の順位・番付を残さない
     camY = 0;
     moonDone = false;
     cleared = false;
@@ -1046,11 +1287,9 @@
   }
 
   // ---- ループ ----
-  const autotest = location.hash === "#autotest" || location.hash === "#autotest-sound";
   const autocut = location.hash === "#autocut"; // わざと少しずらして置く（切断面の確認用）
   // PV素材用: 本番ルールのまま、序盤はぴったり・中盤にかけて少しずつ欠けさせて
   // 「札が細っていく」画を作る自動プレイ。中くらいの細さで落ち着き、72段まで届く
-  const autowobble = location.hash.startsWith("#autowobble"); // "-nofloat"等の付加を許す
   let wobble = 0;
   function nextWobble() {
     if (floors < 6) return 0;                    // 序盤は気持ちよくぴったり

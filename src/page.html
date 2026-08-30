@@ -171,6 +171,134 @@
   #final-score small { font-size: 18px; color: var(--ink); margin-left: 2px; }
   #final-title-label { font-size: 10px; letter-spacing: .25em; color: var(--ink-dim); }
   #final-title { font-size: 17px; font-weight: 800; letter-spacing: .2em; color: var(--moon); margin-top: 2px; }
+  /* 全国ランキング（わいわいタウン）。取れなかった行は hidden で丸ごと消える＝言い訳を出さない */
+  #final-rank { display: flex; flex-direction: column; gap: 3px; }
+  #final-rank[hidden], #final-rank-mark[hidden], #final-rank-line[hidden] { display: none; }
+  #final-rank-mark { font-size: 12px; font-weight: 800; letter-spacing: .2em; color: var(--moon); }
+  /* 釦の負のマージン（下記 .rank-open）を素直に効かせるため、行そのものを flex にする
+     ＝行の高さが「文字の行送り」ではなく「釦のマージン箱」で決まる。 */
+  #final-rank-line { display: flex; justify-content: center; font-size: 13px; letter-spacing: .1em; color: var(--ink-dim); }
+  #final-rank-line em { font-style: normal; font-weight: 800; color: var(--kindei); }
+  /* 順位の行そのものが番付への入口。13pxの1行のままでは押し所が床（両辺24px）を割るので、
+     釦で包んで押し所は釦側で確保する。上下3pxずつを周りの余白へ食い込ませ、
+     結果カードの背を伸ばさない（上は #final-rank の gap 3px、下は .card の gap 14px の中）。
+     上位の顔ぶれが取れなかった夜は素の span のまま出る＝入口ごと存在しない。 */
+  .rank-open {
+    display: inline-flex;
+    align-items: center;
+    gap: .45em;
+    min-height: 24px;
+    padding: 1px 12px;
+    margin: -3px 0;
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .rank-open:focus-visible { outline: 2px solid var(--moon); outline-offset: 2px; }
+  .rank-open-mark { font-size: 12px; color: var(--kindei); }
+  /* 番付（上位10人＋自分）。行数ぶんだけ背が伸びる＝高さを決め打ちしないので、
+     1人でも10人でも空きが出ない。閉じ方は ✕ と外側タップの2つだけ（作法を増やさない）。 */
+  #banzuke {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 10, 24, .78);
+    z-index: 12;
+  }
+  #banzuke.show { display: flex; }
+  .bz-card {
+    position: relative;
+    background: linear-gradient(170deg, rgba(28, 24, 54, .93), rgba(19, 16, 38, .95));
+    border: 1px solid #b89b5a;
+    box-shadow: 0 0 0 3px rgba(19, 16, 38, .9), 0 0 0 4px #6d5a33, 0 14px 50px rgba(0, 0, 0, .65);
+    border-radius: 10px;
+    padding: 24px 22px 22px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: min(92vw, 340px);
+    box-sizing: border-box;
+  }
+  #bz-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink-dim);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  #bz-close:focus-visible { outline: 2px solid var(--moon); outline-offset: 2px; }
+  #bz-head { font-size: 16px; font-weight: 800; letter-spacing: .34em; color: var(--moon); }
+  #bz-sub { font-size: 12px; letter-spacing: .12em; color: var(--ink-dim); margin-top: -8px; }
+  #bz-sub em { font-style: normal; font-weight: 800; color: var(--kindei); }
+  #bz-list, #bz-me { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  #bz-list {
+    /* 背の低い画面のときだけ効く安全弁。body の touch-action: none を打ち消さないと指で送れない */
+    max-height: 58vh;
+    overflow-y: auto;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+  .bz-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 7px 10px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: rgba(232, 228, 216, .05); /* 月白をごく薄く敷いた紙の地 */
+    text-align: left;
+  }
+  .bz-rank {
+    flex: 0 0 2.1em;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    color: var(--ink-dim);
+  }
+  .bz-row.top .bz-rank { color: var(--moon); }
+  .bz-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 14px;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .bz-score {
+    flex: 0 0 auto;
+    font-family: "M PLUS Rounded 1c", "Hiragino Sans", sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--kindei);
+    font-variant-numeric: tabular-nums;
+  }
+  /* 浄化の回数は段のあとに小さく添える（段が主・浄化が従の一軸をそのまま画に写す） */
+  .bz-score small { font-size: 12px; font-weight: 500; color: var(--ink-dim); margin-left: 3px; }
+  /* 自分の行は金泥の縁で見分ける（上位に居ればその行に・居なければ下に1行足す） */
+  .bz-row.me { border-color: var(--kindei); background: rgba(217, 169, 76, .12); }
+  .bz-row.me .bz-name { color: var(--moon); }
+  /* 自分の行は地が金泥寄りに温まるぶん、順位の数字も --ink-dim ではなく --moon にする
+     （地の明るいところで --ink-dim は読みの床4.5を割る。御霊おとしで実測） */
+  .bz-row.me .bz-rank { color: var(--moon); }
+  .bz-row.me .bz-score small { color: var(--ink); }
+  #bz-gap { font-size: 13px; line-height: 1; letter-spacing: .3em; color: var(--ink-dim); margin: -4px 0; }
+  #bz-gap[hidden], #bz-me[hidden] { display: none; }
   /* 満月成就のクリア画面: 夜明けの蝕紅に対して、こちらは金泥で祝う */
   #result-card.clear {
     border-color: var(--moon);
@@ -399,6 +527,14 @@
     .story { font-size: 11px; }
     .game-title { font-size: 28px; }
   }
+  /* 背の低い画面では、順位の2行ぶん（約51px）でカードが画面からはみ出す。
+     札絵は到達の記念なので削らない・文字は12pxの床を割らない＝**縮めてよいのは余白だけ**。
+     `padding` の一括指定で書かないこと: 上の @media (max-width: 430px) が横を 22px に
+     詰めてあるので、一括で書くと横の余白まで押し戻してしまう（#overlay .card のほうが
+     詳細度で勝つため、書いた順に関係なく上書きされる）。縦の長手だけを書く。 */
+  @media (max-height: 700px) {
+    #overlay .card { padding-top: 18px; padding-bottom: 18px; gap: 8px; }
+  }
 </style>
 </head>
 <body>
@@ -460,7 +596,24 @@
       <div class="score-label">重ねた段</div>
       <div id="final-score">0<small>段</small></div>
     </div>
+    <div id="final-rank" hidden>
+      <div id="final-rank-mark" hidden>最高記録を更新</div>
+      <div id="final-rank-line" hidden></div>
+    </div>
     <button id="retry">もう一夜</button>
+  </div>
+</div>
+
+<!-- 番付（全国ランキングの一覧）。結果カードの順位の行から開く。
+     中身は game.js が組み立てる（上位が取れなかった夜は入口ごと出ないので、この札も開かない）。 -->
+<div id="banzuke" role="dialog" aria-label="番付">
+  <div class="bz-card">
+    <button id="bz-close" aria-label="番付を閉じる">✕</button>
+    <div id="bz-head">番付</div>
+    <div id="bz-sub" hidden></div>
+    <ol id="bz-list"></ol>
+    <div id="bz-gap" aria-hidden="true" hidden>⋮</div>
+    <ol id="bz-me" hidden></ol>
   </div>
 </div>
 
