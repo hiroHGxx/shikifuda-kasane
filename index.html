@@ -1130,7 +1130,13 @@ const FACE_DATA = {
     if (now - lastTouchEnd < 350 && !(e.target instanceof HTMLButtonElement)) e.preventDefault();
     lastTouchEnd = now;
   }, { passive: false });
-  document.addEventListener("gesturestart", (e) => e.preventDefault());
+  // ダブルタップズームは抑止するが、**等倍のときだけ**にする。無条件に塞ぐと、
+  // 一度ズームしてしまったあと元へ戻すピンチまで塞いでしまい、出口が無くなる
+  // （御霊おとしで実機報告あり）。visualViewport が無い環境は 1 とみなす＝従来どおり常に抑止。
+  document.addEventListener("gesturestart", (e) => {
+    const s = (window.visualViewport && window.visualViewport.scale) || 1;
+    if (s <= 1.01) e.preventDefault();
+  });
 
   // ---- タイトル画面・開始 ----
   const titleOverlay = document.getElementById("title-overlay");
