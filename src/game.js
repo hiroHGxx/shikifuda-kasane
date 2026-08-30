@@ -294,14 +294,17 @@
         voiceBus = audioCtx.createGain();
         voiceBus.gain.value = SFX_BUS; // 台詞の大きさは据え置き（旧: gain 1.0 × sfxBus 0.9）
         voiceBus.connect(audioCtx.destination);
-        const load = (url, set) => fetchBytes(url)
+        // **握りつぶさない。**用意できなかった音は、鳴らないまま静かに消える種類の事故になる
+        // （琴は合成音へ落ちるので「鳴っているのに実は読めていない」が起きる。台詞は無音になる）。
+        // 御霊おとしが2026-08-26にCSPで踏んだのと同じ形なので、こちらも warn を残す。
+        const load = (url, set, label) => fetchBytes(url)
           .then(ab => audioCtx.decodeAudioData(ab))
           .then(set)
-          .catch(() => {});
-        load(KOTO_MAIN_DATA, b => { kotoMainBuf = b; });
-        load(KOTO_HIGH_DATA, b => { kotoHighBuf = b; });
+          .catch(e => console.warn("[audio] " + label + " を用意できなかった", e));
+        load(KOTO_MAIN_DATA, b => { kotoMainBuf = b; }, "琴（単音）");
+        load(KOTO_HIGH_DATA, b => { kotoHighBuf = b; }, "琴（装飾句）");
         for (const key of Object.keys(VOICE_SRC)) {
-          load(VOICE_SRC[key], b => { voiceBufs[key] = b; });
+          load(VOICE_SRC[key], b => { voiceBufs[key] = b; }, "台詞 " + key);
         }
       }
     }
