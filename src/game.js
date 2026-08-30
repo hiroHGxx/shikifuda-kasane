@@ -64,10 +64,165 @@
     return t;
   }
 
+  // ---- 記録（わいわいSDK・セーブ保全） ----
+  // 第三者iframe（わいわいタウンのサイト内プレイ）ではゲーム自身の localStorage が保持されない。
+  // 御霊おとしで iPhone の Safari・Chrome の両方に実害を確認している（枠の中から遊ぶと
+  // アプリ終了で最高記録がゼロに戻る／Pages を直に開くと残る）。わいわいSDK の save/load は
+  // 親ページ側へ代理保存するので主経路にし、SDK が無い・読めない・応答しないときは
+  // 今までどおりこのページの localStorage を直に使う（Artifact 版は CSP で sdk.js が読めない
+  // ＝window.waiwai がそもそも無い）。仕様の正本: https://waiwai.town/llms.txt
+  const SAVE_KEY = "fudakasane_save";
+  const SAVE_TIMEOUT_MS = 2500; // 相手を待ちすぎない（SDK自身は握手2秒＋要求5秒待つ）
+  const LEGACY_KEYS = {
+    best: "fudakasane_best",
+    title: "fudakasane_title",
+    titleRank: "fudakasane_title_rank",
+    sound: "fudakasane_sound",
+  };
+  const TIMED_OUT = {}; // Promise.race の勝者が「時間切れ」であることの印
+
+  // 記録の実体。best / titleRank は増える一方なので、どの経路から読んでも大きいほうを採る
+  // ＝片方が古くても記録が後退しない（移行と自己修復を同じ規則で兼ねる）。
+  const saveData = { best: 0, title: "", titleRank: -1, sound: "on" };
+  let saveResolve;
+  const saveLoaded = new Promise((res) => { saveResolve = res; });
+  let saveUseSdk = false;  // わいわい側の記録を読めた夜だけ true（読めていないのに書くと相手を潰す）
+  let saveDirty = false;   // 書いていない更新があるか（画面を離れるときに取りこぼさないため）
+
+  // わいわいSDK の呼び出しの芯。例外・拒否・無応答のどれでも { ok:false } を返し、
+  // 握りつぶさず warn は残す（「CSPで止まったのに静かに合成音へ落ちていた」の轍を踏まない）。
+  function waiwaiTry(fn, label, ms) {
+    let call;
+    try {
+      call = fn();
+    } catch (e) {
+      console.warn("[waiwai] " + label + " を呼べなかった", e);
+      return Promise.resolve({ ok: false });
+    }
+    const timeout = new Promise((res) => setTimeout(() => res(TIMED_OUT), ms));
+    return Promise.race([Promise.resolve(call), timeout]).then(
+      (v) => {
+        if (v === TIMED_OUT) {
+          console.warn("[waiwai] " + label + " が " + ms + "ms 以内に返らなかった");
+          return { ok: false };
+        }
+        return { ok: true, value: v };
+      },
+      (e) => {
+        console.warn("[waiwai] " + label + " が失敗した", e);
+        return { ok: false };
+      }
+    );
+  }
+
+  function mergeSave(o) {
+    if (!o || typeof o !== "object") return;
+    const num = (v) => (typeof v === "number" && isFinite(v) ? Math.floor(v) : null);
+    const b = num(o.best);
+    if (b !== null) saveData.best = Math.max(saveData.best, Math.min(MOON_FLOOR, Math.max(0, b)));
+    const r = num(o.titleRank);
+    if (r !== null && r > saveData.titleRank && typeof o.title === "string" && o.title) {
+      saveData.titleRank = r;
+      saveData.title = o.title.slice(0, 40);
+    }
+    if (o.sound === "off" || o.sound === "on") saveData.sound = o.sound; // 好みは後から読んだ側が勝つ
+  }
+
+  // 旧キー（このページ自身の localStorage）。移行元であり、SDK が使えない夜の置き場でもある。
+  function readLegacy() {
+    const d = {};
+    try {
+      const raw = {
+        best: localStorage.getItem(LEGACY_KEYS.best),
+        title: localStorage.getItem(LEGACY_KEYS.title),
+        titleRank: localStorage.getItem(LEGACY_KEYS.titleRank),
+        sound: localStorage.getItem(LEGACY_KEYS.sound),
+      };
+      d.__found = Object.keys(raw).some((k) => raw[k] !== null);
+      if (raw.best !== null) d.best = +raw.best;
+      if (raw.title) d.title = raw.title;
+      if (raw.titleRank !== null) d.titleRank = +raw.titleRank;
+      if (raw.sound !== null) d.sound = raw.sound === "off" ? "off" : "on";
+    } catch (e) {
+      console.warn("[save] localStorage を読めなかった", e);
+    }
+    return d;
+  }
+  function writeLegacy() {
+    try {
+      localStorage.setItem(LEGACY_KEYS.best, saveData.best);
+      localStorage.setItem(LEGACY_KEYS.sound, saveData.sound);
+      if (saveData.title) {
+        localStorage.setItem(LEGACY_KEYS.title, saveData.title);
+        localStorage.setItem(LEGACY_KEYS.titleRank, saveData.titleRank);
+      }
+    } catch (e) {
+      console.warn("[save] localStorage へ書けなかった", e);
+    }
+  }
+  function dropLegacy() {
+    // 公式の推奨手順「旧キーを読む → waiwai.save で書く → 旧キーを消す」の最後の一歩。
+    // save が成功したときだけ呼ぶ（先に消すと、書けなかったときに記録が消える）。
+    try {
+      for (const k of Object.keys(LEGACY_KEYS)) localStorage.removeItem(LEGACY_KEYS[k]);
+    } catch (e) {}
+  }
+
+  // 記録を書く。呼び出し側は await しない（画面を待たせない）。
+  function persistSave() {
+    saveDirty = false;
+    return saveLoaded.then(() => {
+      if (!saveUseSdk) {
+        writeLegacy();
+        return false;
+      }
+      return waiwaiTry(
+        () => window.waiwai.save(SAVE_KEY, {
+          best: saveData.best,
+          title: saveData.title,
+          titleRank: saveData.titleRank,
+          sound: saveData.sound,
+        }),
+        "save(" + SAVE_KEY + ")",
+        SAVE_TIMEOUT_MS
+      ).then((r) => {
+        if (!r.ok) writeLegacy(); // 書けなかった夜も、せめてこのブラウザには残す
+        return r.ok;
+      });
+    }).catch((e) => {
+      console.warn("[save] 書き込みでつまずいた", e);
+      return false;
+    });
+  }
+
+  (function loadSave() {
+    const legacy = readLegacy();
+    if (!window.waiwai) {
+      console.warn("[save] わいわいSDK が読めていないので、このページの localStorage を直に使う");
+      mergeSave(legacy);
+      saveResolve();
+      return;
+    }
+    waiwaiTry(() => window.waiwai.load(SAVE_KEY), "load(" + SAVE_KEY + ")", SAVE_TIMEOUT_MS).then((r) => {
+      if (!r.ok) {
+        // 読めていない状態で書くと、向こうにある記録を低い値で潰しかねない。この夜は書かない。
+        console.warn("[save] わいわい側の記録を読めなかった。この夜は localStorage だけを使う");
+        mergeSave(legacy);
+        saveResolve();
+        return;
+      }
+      saveUseSdk = true;
+      mergeSave(legacy);   // 旧キー（移行元）
+      mergeSave(r.value);  // わいわい側の記録。数は大きいほうが残り、音の好みは後から読んだこちらが勝つ
+      saveResolve();
+      if (legacy.__found) persistSave().then((ok) => { if (ok) dropLegacy(); });
+    });
+  })();
+
   // ---- 音 ----
   let audioCtx = null;
-  let soundOn = true;
-  try { soundOn = localStorage.getItem("fudakasane_sound") !== "off"; } catch (e) {}
+  let soundOn = true;      // 実際の値は saveLoaded の後に入る（waiwai.load は非同期のため）
+  let soundChosen = false; // タイトルの2択や♪で決めたあとは、遅れて届いた記録で上書きしない
   const bgm = new Audio(BGM_DATA);
   bgm.loop = true;
   bgm.volume = 0.16; // BGMは控えめに、効果音を主役にする
@@ -315,6 +470,9 @@
   }
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
+      // 夜の途中でアプリを畳まれても最高段を落とさない（従来は1段ごとに書いていた）。
+      // ここが実機で「終了させられる直前」に確実に来る最後の機会。
+      if (saveDirty) persistSave();
       bgm.pause();
       if (audioCtx) audioCtx.suspend();
     } else {
@@ -322,10 +480,12 @@
       if (audioCtx) audioCtx.resume();
     }
   });
-  addEventListener("pagehide", () => bgm.pause());
+  addEventListener("pagehide", () => { bgm.pause(); if (saveDirty) persistSave(); });
   document.getElementById("mute").addEventListener("click", () => {
     soundOn = !soundOn;
-    try { localStorage.setItem("fudakasane_sound", soundOn ? "on" : "off"); } catch (e) {}
+    soundChosen = true;
+    saveData.sound = soundOn ? "on" : "off";
+    persistSave();
     applySound();
   });
 
@@ -369,8 +529,7 @@
   let moonDone = false;
   let cleared = false;   // 満月成就で終えたか（夜明けと結果画面を出し分ける）
   let nextBellAt = 0;
-  let best = 0;
-  try { best = +(localStorage.getItem("fudakasane_best") || 0); } catch (e) {}
+  let best = 0; // 実際の値は saveLoaded の後に入る
 
   const particles = [];   // {sx, wy, vx, vy, life, color} sx=画面x, wy=世界高さ
   const rings = [];       // {sx, wy, r, life}
@@ -479,7 +638,8 @@
     floors++;
     if (floors > best && !practice) { // 稽古の到達は誉れに残さない
       best = floors;
-      try { localStorage.setItem("fudakasane_best", best); } catch (e) {}
+      saveData.best = best;
+      saveDirty = true; // 書くのは夜の終わり（と画面を離れるとき）にまとめて1回
     }
     const ctrX = px(top.x + top.w / 2, top.z + top.d / 2);
     // 段替わり: 新しく現れた御霊が名乗る
@@ -518,28 +678,29 @@
 
   // ---- 称号の保存・表示 ----
   function saveBestTitle() {
-    try {
-      const prev = +(localStorage.getItem("fudakasane_title_rank") || -1);
-      if (floors > prev) {
-        localStorage.setItem("fudakasane_title_rank", floors);
-        localStorage.setItem("fudakasane_title", titleFor(floors));
-      }
-    } catch (e) {}
-  }
-  try {
-    const bt = localStorage.getItem("fudakasane_title");
-    if (bt) {
-      const el = document.getElementById("best-title");
-      el.hidden = false;
-      el.append("これまでの誉れ：");
-      const em = document.createElement("em");
-      em.textContent = bt;
-      el.append(em);
+    if (floors > saveData.titleRank) {
+      saveData.titleRank = floors;
+      saveData.title = titleFor(floors);
+      saveDirty = true;
     }
-  } catch (e) {}
+  }
+  // 「これまでの誉れ」は記録を読み終えてから一度だけ出す（0点を出してから差し替えない）。
+  function renderBestTitle() {
+    const bt = saveData.title;
+    if (!bt) return;
+    const el = document.getElementById("best-title");
+    el.hidden = false;
+    el.append("これまでの誉れ：");
+    const em = document.createElement("em");
+    em.textContent = bt;
+    el.append(em);
+  }
 
   function showGameOver() {
-    if (!practice) saveBestTitle(); // 稽古の到達は誉れに残さない
+    if (!practice) {
+      saveBestTitle(); // 稽古の到達は誉れに残さない
+      persistSave();   // best と称号をまとめて1回。await しない（カードを待たせない）
+    }
     // 満月成就なら道しるべの栞が締める。夜明けならそこまで導いた御霊を出す
     document.getElementById("result-card").classList.toggle("clear", cleared);
     document.getElementById("final-heading").textContent = cleared ? "満月成就" : "札は夜に呑まれた";
@@ -600,11 +761,26 @@
     const pick = FUDA_ART[keys[(Math.random() * keys.length) | 0]];
     document.getElementById("title-bg").style.backgroundImage = "url('" + pick + "')";
     requestAnimationFrame(() => titleOverlay.classList.add("art-in"));
-    setTimeout(() => titleOverlay.classList.add("ready"), 1400);
+    // カードが出た時点で「これまでの誉れ」は確定している＝差し替わる瞬間を作らない。
+    // 待ちは必ず上限つき（loadSave 側が SAVE_TIMEOUT_MS で切る）。5秒の保険だけは無条件。
+    setTimeout(() => saveLoaded.then(showTitleCard), 1400);
+    setTimeout(showTitleCard, 5000);
+  }
+  let titleCardShown = false;
+  function showTitleCard() {
+    if (titleCardShown) return;
+    titleCardShown = true;
+    best = Math.max(best, saveData.best);
+    if (!soundChosen) soundOn = saveData.sound !== "off";
+    updateHud();
+    renderBestTitle();
+    titleOverlay.classList.add("ready");
   }
   function begin(withSound) {
     soundOn = withSound;
-    try { localStorage.setItem("fudakasane_sound", soundOn ? "on" : "off"); } catch (e) {}
+    soundChosen = true;
+    saveData.sound = soundOn ? "on" : "off";
+    persistSave();
     initAudio();
     if (audioCtx) audioCtx.resume();
     titleOverlay.classList.add("hidden");
@@ -883,7 +1059,9 @@
     return Math.random() < 0.8 ? 0
       : (Math.random() < 0.5 ? -1 : 1) * (8 + Math.random() * 4);   // 以降はたまに小さく
   }
-  if (autotest || autocut || autowobble) setTimeout(() => begin(location.hash === "#autotest-sound"), 600);
+  if (autotest || autocut || autowobble) {
+    setTimeout(() => saveLoaded.then(() => begin(location.hash === "#autotest-sound")), 600);
+  }
   let last = performance.now();
   function loop(now) {
     const dt = Math.min(now - last, 33) / 1000;

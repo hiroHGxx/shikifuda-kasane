@@ -469,6 +469,11 @@
   <div class="door-half door-r"><div class="door-band"></div></div>
 </div>
 
+<!-- わいわいタウンのSDK。第三者iframeではこのページ自身の localStorage が保持されないため、
+     記録は親ページ側へ代理保存する。crossorigin は省略しない（COEP下で黙って止まる）。
+     読めなくてもゲームは一切変わらない（game.js 側で window.waiwai の有無を見ている）。 -->
+<script src="https://waiwai.town/sdk.js" crossorigin="anonymous"></script>
+
 <script src="src/bgm.js"></script>
 <script src="src/assets.js"></script>
 <script src="src/faces.js"></script>

@@ -73,7 +73,28 @@
 ## 7. 入力・iOS対策
 
 - pointerdown で札を置く。開始・リトライ直後は700ms入力を受けない（ボタンのタップの名残で即ミスするのを防ぐ）
-- ダブルタップズーム抑止（350ms以内の2回目を preventDefault・ボタン除外）、`gesturestart` を preventDefault
+- ダブルタップズーム抑止（350ms以内の2回目を preventDefault・ボタン除外）
+- **`gesturestart` は等倍のときだけ抑止する**（`visualViewport.scale <= 1.01`）。無条件に塞ぐと、一度ズームしたあと元へ戻すピンチまで塞がれて出口が無くなる（御霊おとしで実機報告あり）。`visualViewport` が無い環境・`scale` が 0/NaN の環境は従来どおり常に抑止
+
+## 7-a. わいわいSDK（セーブ保全）
+
+`https://waiwai.town/sdk.js` を1行読み込む（**`crossorigin="anonymous"` を省略しない**。COEP下で黙ってブロックされる）。仕様の正本は https://waiwai.town/llms.txt 。
+
+**大原則: SDKが無くても・読めなくても・応答しなくても、ゲームは一切変化なく遊べること。**
+`dist/artifact.html` は Artifact の CSP で外部スクリプトが止まるため、これは想定内の常態である。
+すべての呼び出しは `waiwaiTry()`（try/catch ＋ 自前タイムアウト `SAVE_TIMEOUT_MS = 2500`）を通す。
+SDK 自身はハンドシェイク2秒＋要求5秒待つので、素直に `await` すると画面が最大7秒止まる。
+**失敗は握りつぶさず `console.warn` を1行残す。**
+
+- **わいわいタウンの枠（iframe）では、ゲーム自身の localStorage が保持されない**（御霊おとしで2026-08-29にオーナーの iPhone で実機確認。Safari・Chrome とも、タブとアプリを終了すると記録が消えた。**Pages を直接開いた場合は消えない**）
+- 4つの値を**1キー `fudakasane_save` の束**にまとめ、`waiwai.save()` / `waiwai.load()` を主経路にする（`best` / `title` / `titleRank` / `sound`）
+- **移行**: 初回に旧 localStorage キー（`fudakasane_best` ほか4つ）を読み、あれば束にして保存してから旧キーを消す（公式の推奨手順）。**消すのは保存が解決してから**
+- **`best` / `titleRank` は大きいほうを採る**（`mergeSave()`）。移行と自己修復が同じ規則で片づく。`best` は 0〜`MOON_FLOOR`(80) に丸める
+- **タイムアウトと「記録が無い（`null`）」を区別する。**潰すと「読めなかった」を「初回だ」と誤読し、**空の値で向こうの記録を上書きする**。`waiwaiTry` は `{ok, value}` で返し、`ok:false` の夜は SDK に書かない
+- チラつき対策は「**待たせる**」に寄せる。タイトルのカードの表示自体を `saveLoaded` まで待たせる（0段を出してから差し替える見え方にしない）。`#autotest` 等の自動プレイも同じく待つ。**5秒の保険だけは無条件**
+- 書き込みは**夜の終わり（`showGameOver`）に1回**。`best` と称号は `saveData` を書き換えるだけにして、最後に `persistSave()` を1回・await しない。**あわせて画面を離れるとき（`visibilitychange`→hidden・`pagehide`）にも未書き込みがあれば書く**——従来は1段ごとに `localStorage` へ書いていたので、夜の途中で閉じても最高段が残っていた。その保証を落とさないため
+- タウンの外では SDK が自動で localStorage 保存にフォールバックする＝**同じビルドをそのまま配布できる**
+- 稽古モードの到達は従来どおり記録に残さない（`!practice` のガードは `best` と称号の両方に入っている）
 
 ## 8. アセットとビルド
 
