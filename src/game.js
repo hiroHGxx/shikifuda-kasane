@@ -995,6 +995,10 @@
     if (s <= 1.01) e.preventDefault();
   });
 
+  // ---- 帳（とばり）の時間割 ----
+  const VOICE_AT_MS = 350;   // 栞の台詞の開始
+  const DOOR_OPEN_AT = 1650; // = 350 + 1300。「ページを、」の直後＝520msの休符の頭で開きはじめる
+
   // ---- タイトル画面・開始 ----
   const titleOverlay = document.getElementById("title-overlay");
   {
@@ -1034,15 +1038,24 @@
     updateHud();
     newSlab();
 
-    // 帳が開く: 閉じた扉を見せ、栞のひと言のあとに左右へ開く
+    // 帳が開く: 閉じた扉を見せ、栞のひと言の**休符の頭**で左右へ開く。
+    // 数字を先に決めず、声を聴いてから決める（SHITSURAE §1「幕を足すなら台詞の切れ目に合わせる」）。
+    // 台詞「今宵のページを、開きましょう」の刻みは実測（20msのRMS包絡で無音を拾った）:
+    // 0.00〜0.62「今宵の」／0.62〜0.72 休符100ms／0.72〜1.30「ページを、」／
+    // **1.30〜1.82 休符520ms**／1.82〜2.76「開きましょう」。全長2.757秒。
+    // 以前は 1100ms ＝「ページを、」を言っている最中に開いていた。
+    // 演出は視覚なので、音なしで入った人にも同じ時間割で開く。
     const door = document.getElementById("door");
+    const moveMs = reducedMotion ? 350 : 1500; // 開く速さは CSS 側（.door-half の transition）
     door.classList.remove("open");
     door.classList.add("show");
-    pausedUntil = performance.now() + 2600; // 開ききるまで札は動かさない
-    setTimeout(() => voiceLine("shiori_start"), 350);  // 今宵のページを、開きましょう
-    setTimeout(() => { door.classList.add("open"); woodblock(0, 0.5); }, 1100);
-    setTimeout(() => door.classList.remove("show"), 2700);
-    setTimeout(() => voiceLine(SPIRITS[0].key), 3000); // 最初の御霊が名乗る
+    // 開ききるまで札は動かさない（開始タップの名残がそのまま入力にならない意味も兼ねる）
+    pausedUntil = performance.now() + DOOR_OPEN_AT + moveMs;
+    setTimeout(() => voiceLine("shiori_start"), VOICE_AT_MS);
+    setTimeout(() => { door.classList.add("open"); woodblock(0, 0.5); }, DOOR_OPEN_AT);
+    setTimeout(() => door.classList.remove("show"), DOOR_OPEN_AT + moveMs + 100);
+    // 最初の御霊は、栞が言い終えて帳が開ききったあとに名乗る
+    setTimeout(() => voiceLine(SPIRITS[0].key), DOOR_OPEN_AT + moveMs + 250);
   }
   document.getElementById("start").addEventListener("click", () => begin(true));
   document.getElementById("start-silent").addEventListener("click", () => begin(false));
