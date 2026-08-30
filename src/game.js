@@ -115,17 +115,35 @@
     );
   }
 
+  // 記録を束へ取り込む。**「読み取れた"記録の"欄の数」を返す**（-1 は「そもそも記録の形をしていない」）。
+  // 数えるのは `best` と `titleRank`+`title` だけ。**`sound` は記録ではなく好み**なので数えない
+  // ——数えてしまうと「段は型ちがいで読めなかったが音だけ読めた」夜を「読めた」と誤判定し、
+  // 向こうの記録を今夜の低い段で潰す（2026-08-30 検品の追試で実際に潰れた）。
+  // 呼び出し側はこれを見て「読めたのか・読めなかったのか」を判断する。0 と -1 を
+  // 「初回だ」と読み違えると、**空の値で向こうの記録を上書きする**（2026-08-30 検品指摘）。
+  //
+  // 段は 0〜MOON_FLOOR(80) の外へは出ない。**上限を超えた値は丸めずに捨てる**——
+  // 丸めると壊れた値が「80段＝満月成就」という最上位の誉れに化ける（同・検品指摘）。
   function mergeSave(o) {
-    if (!o || typeof o !== "object") return;
-    const num = (v) => (typeof v === "number" && isFinite(v) ? Math.floor(v) : null);
-    const b = num(o.best);
-    if (b !== null) saveData.best = Math.max(saveData.best, Math.min(MOON_FLOOR, Math.max(0, b)));
-    const r = num(o.titleRank);
-    if (r !== null && r > saveData.titleRank && typeof o.title === "string" && o.title) {
-      saveData.titleRank = r;
-      saveData.title = o.title.slice(0, 40);
+    if (!o || typeof o !== "object") return -1;
+    let read = 0;
+    const floor = (v) => {
+      if (typeof v !== "number" || !isFinite(v)) return null;
+      const n = Math.floor(v);
+      return n >= 0 && n <= MOON_FLOOR ? n : null; // 段の外の値は壊れている
+    };
+    const b = floor(o.best);
+    if (b !== null) { read++; saveData.best = Math.max(saveData.best, b); }
+    const r = floor(o.titleRank);
+    if (r !== null && typeof o.title === "string" && o.title) {
+      read++;
+      if (r > saveData.titleRank) {
+        saveData.titleRank = r;
+        saveData.title = o.title.slice(0, 40);
+      }
     }
-    if (o.sound === "off" || o.sound === "on") saveData.sound = o.sound; // 好みは後から読んだ側が勝つ
+    if (o.sound === "off" || o.sound === "on") saveData.sound = o.sound; // 好みは後から読んだ側が勝つ（数えない）
+    return read;
   }
 
   // 旧キー（このページ自身の localStorage）。移行元であり、SDK が使えない夜の置き場でもある。
@@ -211,9 +229,18 @@
         saveResolve();
         return;
       }
-      saveUseSdk = true;
       mergeSave(legacy);   // 旧キー（移行元）
-      mergeSave(r.value);  // わいわい側の記録。数は大きいほうが残り、音の好みは後から読んだこちらが勝つ
+      // わいわい側の記録。数は大きいほうが残り、音の好みは後から読んだこちらが勝つ。
+      // r.value が null なら「まだ記録が無い」＝初回。非nullなのに1欄も読み取れなかったときは
+      // **形が違う＝読めていない**とみなし、時間切れと同じ扱いにする（この夜は書かない）。
+      // 書いてしまうと、向こうにある本物の記録を今夜の低い値で潰す。
+      const read = r.value === null || r.value === undefined ? 0 : mergeSave(r.value);
+      if (read <= 0 && r.value !== null && r.value !== undefined) {
+        console.warn("[save] わいわい側の記録が読み取れない形だった。この夜は localStorage だけを使う", r.value);
+        saveResolve();
+        return;
+      }
+      saveUseSdk = true;
       saveResolve();
       if (legacy.__found) persistSave().then((ok) => { if (ok) dropLegacy(); });
     });
@@ -700,6 +727,7 @@
   let nightId = 0; // 「もう一夜」ごとに増える。応答が返ったとき、まだ同じ夜かを見る印
 
   const composeScore = (fl, pure) => fl * RANK_SCALE + Math.min(pure, RANK_SCALE - 1);
+  const MAX_SCORE = composeScore(MOON_FLOOR, MOON_FLOOR); // 8080
   const rankNum = (v) => (typeof v === "number" && isFinite(v) && v > 0 ? Math.floor(v) : null);
   const scoreNum = (v) => (typeof v === "number" && isFinite(v) && v >= 0 ? Math.floor(v) : null);
 
@@ -733,7 +761,9 @@
       if (!e || typeof e !== "object") continue;
       const rank = rankNum(e.rank);
       const score = scoreNum(e.score);
-      if (rank === null || score === null) continue;
+      // 合成スコアの理論最大は 80段×100 + 浄化80 = 8080。これを超える値は正しい遊びからは
+      // 出ないので載せない（丸めると「999段」のような、この遊びに無い段が番付に並ぶ）。
+      if (rank === null || score === null || score > MAX_SCORE) continue;
       const raw = typeof e.name === "string" ? e.name.trim() : "";
       out.push({ rank: rank, name: (raw || "ナナシ").slice(0, 20), score: score });
       if (out.length >= BANZUKE_LIMIT) break;
@@ -775,7 +805,11 @@
     if (showMe) bzEls.me.appendChild(bzRow(banzuke.myRank, "あなた", banzuke.myScore, true));
     bzEls.me.hidden = !showMe;
     bzEls.gap.hidden = !showMe;
-    if (banzuke.total !== null) {
+    // 総数が自分の順位より小さいのは辻褄が合っていない。結果カードの行で伏せたのと同じ理由で、
+    // 番付の見出しでも出さない（片方だけ残ると「全国5人」の中の「12位」になる）。
+    const totalOk = banzuke.total !== null
+      && (banzuke.myRank === null || banzuke.total >= banzuke.myRank);
+    if (totalOk) {
       bzEls.sub.textContent = "";
       bzEls.sub.appendChild(document.createTextNode("全国 "));
       const em = document.createElement("em");
