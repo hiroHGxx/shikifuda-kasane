@@ -128,6 +128,9 @@
     justify-content: center;
     background: rgba(10, 10, 24, .78);
     z-index: 10;
+    /* 下端の安全余白: 「もう一夜」は札の下端に sticky で貼り付くので、
+       札そのものをホームバーの帯の上に乗せる（無い端末では0） */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   #overlay.show { display: flex; }
   .card {
@@ -144,7 +147,7 @@
     /* 送りに倒す安全弁（SHITSURAE §6）。満月成就＋順位ありは行が伸び切る組み合わせがあり、
        詰めても背の低い画面では収まりきらないことがある。天井を割ったときだけ中でスクロールさせ、
        両端が画面の外へ消える（＝押せない）事故を避ける。天井の内側では見た目は変わらない。 */
-    max-height: calc(100vh - 12px);
+    max-height: calc(100vh - 12px - env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
     touch-action: pan-y;
     box-sizing: border-box;
