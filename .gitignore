@@ -2,6 +2,11 @@ dist/
 .DS_Store
 node_modules/
 scripts/pv/frames/
+scripts/pv/frames_*/
 scripts/pv/*.png
 scripts/pv/*.mp4
+scripts/pv/*.wav
+scripts/pv/*.webm
 scripts/pv/events.json
+scripts/pv/purify.json
+scripts/pv/meta.json
