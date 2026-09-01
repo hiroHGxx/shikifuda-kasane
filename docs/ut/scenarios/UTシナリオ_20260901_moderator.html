@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>式札かさね UTモデレーターシナリオ</title>
+  <style>
+    :root { color-scheme:light; --ink:#17202a; --muted:#667085; --line:#d7dce2; --paper:#fff; --soft:#f5f7fa; --accent:#2457d6; --good:#157347; --warn:#9a6700; --danger:#b42318; }
+    * { box-sizing:border-box; }
+    body { margin:0; overflow-x:hidden; background:var(--soft); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.55; }
+    main { width:min(1240px,calc(100% - 32px)); max-width:calc(100vw - 32px); margin:32px auto; background:var(--paper); padding:clamp(24px,4vw,52px); border:1px solid var(--line); border-radius:16px; }
+    h1 { font-size:clamp(28px,4vw,42px); line-height:1.15; margin:0 0 12px; }
+    h2 { margin-top:48px; padding-bottom:10px; border-bottom:2px solid var(--ink); }
+    .meta { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin:20px 0; color:var(--muted); }
+    .callout { padding:16px 18px; background:#eef3ff; border-left:4px solid var(--accent); border-radius:8px; }
+    .callout.amber { background:#fff8e6; border-left-color:var(--warn); }
+    table { width:100%; border-collapse:collapse; margin:18px 0 30px; font-size:14px; }
+    th,td { padding:12px; border:1px solid var(--line); vertical-align:top; text-align:left; }
+    th { background:#edf0f4; }
+    .id { font-weight:750; color:var(--accent); white-space:nowrap; }
+    .source { color:var(--muted); font-size:12px; }
+    .risk-low { color:var(--good); }
+    .risk-medium { color:var(--warn); }
+    .risk-high { color:var(--danger); font-weight:700; }
+    code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em; }
+    h1,h2,p,.callout,.meta span { overflow-wrap:anywhere; }
+    footer { margin-top:48px; color:var(--muted); font-size:13px; }
+    @media (max-width:800px) { table { display:block; overflow-x:auto; } th,td { min-width:150px; } }
+    @media print { body { background:#fff; } main { width:100%; margin:0; border:0; padding:20px; } table { font-size:11px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>式札かさね UTモデレーターシナリオ</h1>
+    <div class="meta">
+      <span>モード: hybrid</span>
+      <span>環境: local（http://127.0.0.1:8972/）</span>
+      <span>作成: 2026-09-01</span>
+      <span>改訂: —</span>
+      <span>シナリオ数: 12</span>
+      <span>設定: ut.config.yaml</span>
+    </div>
+  </header>
+
+  <div class="callout">
+    参加者へ期待結果や理想操作を先に見せない。結果は実施中に <code>results.jsonl</code> へ逐次保存する。
+    <code>observed</code> は事実だけを書き、<code>interpretation</code> は<strong>空のまま</strong>渡す（解釈は分析工程の持ち場）。
+  </div>
+
+  <h2>0. 目的・範囲・前提</h2>
+  <ul>
+    <li><strong>対象ユーザー</strong>: リンクを踏んで初めて来た人。『月蝕綺譚』を知っている人が主だが、Stack式の遊びと本作の固有ルール（浄化・幅の回復・八十段・稽古・番付）は知らない。</li>
+    <li><strong>対象ジャーニー</strong>: 開く → 何のゲームか分かる → 入る（帳）→ とめる → 細る／浄化に気づく → 進みと交代を知る → 高みに届く → 終わる → 記録が残る → もう一度 → 音を止める → 順位を探す → 別の配布経路 → 稽古。</li>
+    <li><strong>対象外</strong>: 速度曲線・幅回復量のチューニング、番付の中身（枠の中でしか成立せず自動操作では見えない）、二次創作ガイドライン適合、PV・わいわい掲載ページ、見た目の金継ぎ（08-30 実施済み）。</li>
+    <li><strong>実施環境</strong>: このリポジトリを観察スクリプトが <code>http://127.0.0.1:8972/</code> で配信したもの。<strong>本番 origin（github.io）では実施しない</strong>——枠の外では SDK が localStorage に落ちるので、本番の <code>fudakasane_save</code>（オーナーの最高段・称号）を書き換えてしまう。ローカル origin は同時に「初見の状態」でもある。</li>
+    <li><strong>受入の正本</strong>: <code>docs/SPEC.md</code>（節番号で追跡）。08-30〜31 の更新は §7-a／§7-b／§7-c、09-01 の安全余白は DEVELOPMENT.md 末尾。</li>
+    <li><strong>前回との比較</strong>: 本作は初回。ただし検品（08-30・DEVELOPMENT §12）で「記録が黙って潰れる」「上限超えの best が満月成就に化ける」の2件を直しているので、C-7／C-8 はその回帰確認を兼ねる。</li>
+  </ul>
+
+  <div class="callout amber">
+    <strong>実施順の逸脱について（明示）</strong>: 設定の <code>execution.order</code> は非破壊→可逆変更→不可逆の順だが、
+    本作は<strong>入口（A-2）を通らないと盤面に入れない</strong>単一の遊び体験であり、体験順に実施する。
+    可逆変更は <code>localStorage</code> の1キー（<code>fudakasane_save</code> の束）に限られ、UT用 origin ごと捨てられる。
+    <strong>不可逆・外部影響の操作は、枠の外で開く限り存在しない</strong>（<code>submitScore</code> は <code>local:true</code> で端末内に閉じる。
+    観察スクリプトは念のため <code>sdk.js</code> を遮断する）。自動プレイのハッシュは記録も番付も触らない（<code>canSubmitScore()</code>）。
+  </div>
+
+  <h2>A. はじめて開く</h2>
+  <table>
+    <thead><tr><th>No.</th><th>開始状態・参加者タスク</th><th>成功条件・期待結果</th><th>観察点・中立プローブ</th><th>リスク・データ</th><th>結果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="id">A-1</span><div class="source">SPEC §1 概要 / §7-a saveLoaded / page.html #title-overlay</div></td>
+        <td><strong>開始:</strong> localStorage 空。URL を開いた直後。<br><strong>タスク:</strong> 何で、自分は何をすればいいのかを掴む（操作はまだしない）</td>
+        <td>案内カード（題字・副題・世界観3行・遊び方4行＝タップでとどめて重ねる／ずれたぶんは喰われて細る／ぴったりで浄化・幅を取り戻す／八十段で満月・ボタン2つ）が出る。カードは記録の読み込み（<code>saveLoaded</code>）を待って出す＝段0を出してから差し替える見え方にならない（保険5秒）。<strong>参加者が「タップで札を止めて重ねる」「ずれると細くなる」を、聞かずに言える</strong></td>
+        <td><strong>観察:</strong> カードが出るまでの待ち時間（秒）と、その間に何をするか／遊び方4行のどこを読むか／読まずにボタンを押すか／HUD の「段 0／最高 0」をどう受け取るか<br><strong>必要時のみ:</strong> 「いま画面に何が見えていますか」</td>
+        <td><span class="risk-low">non-mutating</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="id">A-2</span><div class="source">SPEC §5 音 / §7-c 帳の時間割 / game.js enterNight()</div></td>
+        <td><strong>開始:</strong> 案内カード表示中。<br><strong>タスク:</strong> 遊び始める</td>
+        <td>「月夜に入る」または「静かに入る — 音なし」を押すとカードが消え、<strong>黒緞子の帳が閉じた状態</strong>で盤面が現れる → 栞の台詞（+350ms）→ 休符の頭（+1650ms）で左右へ開き始め、1.5秒で開ききる。<strong>開ききるまで札は動かず入力も受けない</strong>。音なしでも同じ時間割。選択が束（<code>fudakasane_save.sound</code>）に保存される</td>
+        <td><strong>観察:</strong> 2つのボタンの違いを理解して選ぶか／帳が開くまでの約3秒に何をするか（タップして無反応をどう受け取るか）／帳を「演出」と受け取るか「固まった」と受け取るか／音ありなら台詞を聞き取れたか<br><strong>必要時のみ:</strong> 「いま何が起きていると思いますか」</td>
+        <td><span class="risk-medium">reversible-mutation</span><br>localStorage: fudakasane_save（sound）</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="id">A-3</span><div class="source">SPEC §2 盤面 / §7 入力（pointerdown・開始直後700ms無入力）</div></td>
+        <td><strong>開始:</strong> 帳が開き、最初の札が往き来している。<br><strong>タスク:</strong> 最初の1枚を、狙った場所にとめる</td>
+        <td>画面のどこをタップしても、その瞬間の位置で札がとまる（ドラッグ不要）。はみ出た分は破片として落ち、絵柄も欠ける。開始直後700msは入力を受けない</td>
+        <td><strong>観察:</strong> 最初の操作は何か（タップ／長押し／ドラッグ／札そのものを触るか）／狙いと止まった位置のずれ／700ms 中に押して無反応だったときの反応／「はみ出た分が落ちた」に気づくか<br><strong>必要時のみ:</strong> 「いま何が起きると思って触りましたか」</td>
+        <td><span class="risk-low">non-mutating</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>B. 遊んでいるあいだ</h2>
+  <table>
+    <thead><tr><th>No.</th><th>開始状態・参加者タスク</th><th>成功条件・期待結果</th><th>観察点・中立プローブ</th><th>リスク・データ</th><th>結果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="id">B-4</span><div class="source">SPEC §2 PERFECT_TOL=7 / 5連続で幅+6px / §4 ぴったり演出 / §5 琴</div></td>
+        <td><strong>開始:</strong> 数枚とめた盤面。<br><strong>タスク:</strong> できるだけ長く積む（どうすれば長く積めるか、気づいたことを言う）</td>
+        <td>ずれた分だけ次の札が細くなる。<strong>7px以内で重ねると「浄化」＝金の粒バースト＋天面の環＋「浄化 ×n」＋琴の音、札は細らない</strong>。5回続くと幅が +6px 戻る。<strong>参加者が「ぴったり重ねると細らない」を自力で言語化できる</strong></td>
+        <td><strong>観察:</strong> 細くなったことに何枚目で気づくか／浄化に気づくか（何を見て：光・文字・音）／連続で幅が戻ったことに気づくか（届けば）／タイミングを合わせる工夫を始めるか<br><strong>必要時のみ:</strong> 「いま札に何が起きましたか」</td>
+        <td><span class="risk-low">non-mutating</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="id">B-5</span><div class="source">SPEC §3 階梯（8段ごと交代・名乗り）/ page.html #score #best #spirit-face / §4 月</div></td>
+        <td><strong>開始:</strong> 遊びの途中（8段を越えたあたり）。<br><strong>タスク:</strong> 「いま何段か」「次に何が変わるか」を画面から読み取る</td>
+        <td>HUD に「段」「最高」「御霊（顔）」。8段ごとに天面の札絵と HUD の顔が交代し、音ありなら名乗りの台詞。背景の月が最高到達段に応じて満ちる。速度は段とともに上がる（min(170+段×4.2, 460)）</td>
+        <td><strong>観察:</strong> 「段」を見つけるまでの秒数／御霊が交代したことに気づくか（何で気づいたか：絵・顔・声）／月の満ち欠けに言及するか／速くなったことに言及するか<br><strong>必要時のみ:</strong> 「その表示は何を表していると思いますか」</td>
+        <td><span class="risk-low">non-mutating</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="id">B-6</span><div class="source">SPEC §3 72段 栞の段・80段 満月成就（MOON_FLOOR）</div></td>
+        <td><strong>開始:</strong> 遊びの途中。<br><strong>タスク:</strong> いちばん高いところまで行く（自力で届かない場合、進行役が <code>#autotest</code> で 80 段まで見せる。その旨を results に記録する）</td>
+        <td>72段から金縁の「栞の段」・鈴が約2.6秒おき・栞の台詞。80段で札が出ず入力が止まり、余韻1.3秒 → 栞の満願のページ（金泥の縁・栞の札絵・「月に、届きました。お見事ですこと、あるじどの」）→ 栞の台詞。称号「満月成就」</td>
+        <td><strong>観察:</strong> 72段の変化（金縁・鈴）に気づくか／80段で「終わった」と分かるか、「固まった」と受け取るか／満願のページを「勝ち」と読めるか／ページの人物を誰だと思うか<br><strong>必要時のみ:</strong> 「いま何が起きましたか」</td>
+        <td><span class="risk-low">non-mutating</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>C. 終わりと、もう一度</h2>
+  <table>
+    <thead><tr><th>No.</th><th>開始状態・参加者タスク</th><th>成功条件・期待結果</th><th>観察点・中立プローブ</th><th>リスク・データ</th><th>結果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="id">C-7</span><div class="source">SPEC §4 夜明け / §7-a 保存（夜の終わりに1回）</div></td>
+        <td><strong>開始:</strong> 空振りした直後（自力で。難しければ進行役が <code>#autocut</code> を使い、その旨を記録）。<br><strong>タスク:</strong> 結果を読み取り、もう一度遊び始める</td>
+        <td>「札は夜に呑まれた」「重ねた道は、ここまで」＋称号＋到達した御霊の札絵＋「重ねた段 N」。記録更新なら「最高記録を更新」。<code>fudakasane_save</code> に best/title/titleRank が書かれる。「もう一夜」で再開（帳は開かない・直後700ms無入力）</td>
+        <td><strong>観察:</strong> 空振りの原因（札が来ていない所を押した）を自分で言えるか／「夜が明けた」を負けと受け取るか／称号を読むか・意味が分かるか／「もう一夜」を再開ボタンと分かるか／札絵の人物が「到達した御霊」と分かるか<br><strong>必要時のみ:</strong> 「この画面は何を伝えていますか」</td>
+        <td><span class="risk-medium">reversible-mutation</span><br>localStorage: fudakasane_save（best / title / titleRank）</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="id">C-8</span><div class="source">SPEC §7-a 束・pagehide・案内カードの「最高」</div></td>
+        <td><strong>開始:</strong> 一夜を終えたあと。進行役がページを再読み込みする。<br><strong>タスク:</strong> 自分の記録が残っているかを確かめる</td>
+        <td>再読み込み後の案内カードと HUD の「最高」に前の夜の段が出る（<code>saveLoaded</code> を待ってから出す＝0→N の差し替えが見えない）。ページを閉じる途中（<code>pagehide</code>）でも未書き込みがあれば書く</td>
+        <td><strong>観察:</strong> 「最高」を自分の記録と結びつけられるか／0 が一瞬見えるか（見えたら秒数）／どこを見て「残っている」と判断したか<br><strong>必要時のみ:</strong> 「前の結果はどこに出ていますか」</td>
+        <td><span class="risk-low">non-mutating</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="id">C-9</span><div class="source">SPEC §5 ミュート（BGM＋再生中の台詞も止める）/ page.html #mute</div></td>
+        <td><strong>開始:</strong> 音ありで遊んでいる最中。<br><strong>タスク:</strong> 遊びを中断せずに音を止める</td>
+        <td>HUD 右の ♪ を押すと消音（表示が切り替わる）。再生中の台詞も止まる。盤面は止まらない。選択は束に保存</td>
+        <td><strong>観察:</strong> ♪ を音のボタンだと分かるか（見つけるまでの秒数）／押した後に「止まった」と確信できるか／押し所（大きさ）で外すか<br><strong>必要時のみ:</strong> 「いま音は止まりましたか」</td>
+        <td><span class="risk-medium">reversible-mutation</span><br>localStorage: fudakasane_save（sound）</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="id">C-10</span><div class="source">SPEC §7-b 番付（順位は枠の中だけ）/ README「番付」</div></td>
+        <td><strong>開始:</strong> 夜明けの結果カード（ローカル配信＝わいわいの枠の外）。<br><strong>タスク:</strong> 「自分が全国で何位か」を確かめる</td>
+        <td><strong>枠の外では順位の行そのものが出ない</strong>（SDK が <code>local:true</code> に落ちる／上位が取れなければ入口ごと出さない）。「取得できませんでした」のような文言も出ない。README には「わいわいタウンの中で遊んだ夜だけ載る」とある。<strong>番付の中身（上位10人＋自分・✕と外側タップで閉じる）は自動操作のブラウザではクロスオリジン iframe が描画されないため見えない＝この項目の後半は未実施として残す</strong></td>
+        <td><strong>観察:</strong> 順位を探して画面のどこを見るか（秒数）／出ないことを「壊れている」と受け取るか／README を見に行くか<br><strong>必要時のみ:</strong> 「順位はどこに出ると思いますか」</td>
+        <td><span class="risk-low">non-mutating</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>D. 別の配布経路 ／ E. 隠し</h2>
+  <table>
+    <thead><tr><th>No.</th><th>開始状態・参加者タスク</th><th>成功条件・期待結果</th><th>観察点・中立プローブ</th><th>リスク・データ</th><th>結果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="id">D-11</span><div class="source">SPEC §8 ビルド / §7-a「SDKが無くても一切変化なく遊べる」</div></td>
+        <td><strong>開始:</strong> 進行役が <code>dist/artifact.html</code>（全埋め込み・約10.9MB）を別 origin で開く。<br><strong>タスク:</strong> 同じように遊べるか、見た目と音がさっきと同じかを確かめる</td>
+        <td>index.html 版と同じ画面・同じ音。台詞12場面と琴が <code>atob()</code> 経由で鳴る（fetch(data:) はCSPで死ぬ）。sdk.js が読めないので順位の行が出ない<strong>だけ</strong>で、他は同じ。読み込み中に壊れた画面が見えない</td>
+        <td><strong>観察:</strong> 開いてから遊べるまでの秒数／読み込み中に何が見えるか／音の違い（琴・台詞）に気づくか<br><strong>必要時のみ:</strong> 「さっきと違うところはありますか」</td>
+        <td><span class="risk-low">non-mutating</span><br>別 origin（file:// もしくは同一ローカル配信の別ポート）</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="id">E-12</span><div class="source">SPEC §6 稽古モード（題字を1.5秒以内に3回・pointerdown で数える）/ §7-a !practice</div></td>
+        <td><strong>開始:</strong> 案内カードに戻った状態。<br><strong>タスク:</strong> 練習できる方法があるかを探す（見つからなくても構わない）</td>
+        <td>題字「式札かさね」を1.5秒以内に3回タップすると「稽古（札が欠けない）」と表示され、札が細らず空振りでも終わらない。<strong>稽古の到達は best・称号に残らない</strong>（受入: 稽古で80段に届いても案内カードの「最高」が変わらない）</td>
+        <td><strong>観察:</strong> 見つけられるか（秒数・見つけられなければ failed。隠しなので failed が悪いとは限らない）／稽古中と本番の見分けがつくか／稽古の記録が残らないことをどう受け取るか<br><strong>必要時のみ:</strong> 「いまは本番と何が違うと思いますか」</td>
+        <td><span class="risk-low">non-mutating</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>実施前の確認</h2>
+  <ul>
+    <li>ローカル配信が 200 を返すこと（観察スクリプトが自分で立てて自分で閉じる）</li>
+    <li>開始前の <code>localStorage</code> を baseline として控えること（空であることの確認を含む）</li>
+    <li>画面幅を記録すること（記録していない観察は分析で使わない）。主は 390×844（iPhone 相当）、副に 375×667（SE）と 1280×800（PC）</li>
+    <li>スクリーンショットを <code>runs/&lt;date&gt;-&lt;run-id&gt;/screenshots/</code> に残すこと（canvas の中身は画像でしか残らない）</li>
+    <li>AI が観察役を務めた分は <code>participant_id</code> を <code>AI-P01</code> のように区別し、人間の初見（A-1・B-4 の言語化）は原理的に演じられないので <strong>未実施のまま残す</strong></li>
+  </ul>
+
+  <footer>UT moderator view · 式札かさね 2026-09-01 v1</footer>
+</main>
+</body>
+</html>

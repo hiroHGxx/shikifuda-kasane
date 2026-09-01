@@ -1,0 +1,50 @@
+{
+  "schema_version": "2.0",
+  "run_id": "k2s7",
+  "project_name": "式札かさね（しきふだかさね）",
+  "test_mode": "hybrid",
+  "environment": "local (http://127.0.0.1:8972/ — 観察スクリプトが配信・sdk.js は遮断)",
+  "config_path": "ut.config.yaml",
+  "scenario_source": "docs/ut/scenarios/UTシナリオ_20260901_moderator.html",
+  "started_at": "2026-09-01T10:33:11+09:00",
+  "updated_at": "2026-09-01T10:57:44+09:00",
+  "status": "closed",
+  "participant_ids": [
+    "AI-P01"
+  ],
+  "scenario_counts": {
+    "total": 12,
+    "completed": 8,
+    "with_friction": 2,
+    "failed_or_ng": 2,
+    "blocked": 0,
+    "skipped": 0,
+    "pending": 0
+  },
+  "completed_scenario_ids": [
+    "A-1",
+    "A-2",
+    "A-3",
+    "B-4",
+    "B-5",
+    "B-6",
+    "C-7",
+    "C-8",
+    "C-9",
+    "C-10",
+    "D-11",
+    "E-12"
+  ],
+  "pending_scenario_ids": [],
+  "created_test_data": [
+    "localStorage@127.0.0.1:8972（各 browser context・閉じた時点で消滅）: fudakasane_best / fudakasane_title / fudakasane_title_rank / fudakasane_sound（sdk遮断時）、waiwai:fudakasane_save / waiwai:score:main（file:// で本物SDKが読めた試行）"
+  ],
+  "cleanup_status": "completed",
+  "notes": [
+    "参加者は人間ではない。AI（検品担当・結）が初見の遊び手を代行し、puppeteer で実際に操作した。人間の初見でしか分からない項目（言語化・迷い）は未実施のまま残す",
+    "本番 origin・わいわいタウンの枠には一切触れない。sdk.js は遮断（枠の外では local:true で閉じるが念のため）",
+    "A-3 と C-7 は各2行（通常の完了と、早押し／再開直後の 0段夜明け＝ng）",
+    "失敗率は AI 代理の実測（5/5・20/20 等）であって人の発生頻度ではない",
+    "最初の観察スクリプトはカードが押せる前（pointer-events:none）にクリックしていた。待ち条件を ready＋opacity≥0.95 に直して撮り直した（obs.json は初回、obs2〜5 が撮り直し）"
+  ]
+}

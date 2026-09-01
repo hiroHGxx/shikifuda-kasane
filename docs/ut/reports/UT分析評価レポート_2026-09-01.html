@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>式札かさね UT分析評価レポート</title>
+  <style>
+    :root { color-scheme:light; --ink:#16202a; --muted:#667085; --line:#d6dbe1; --paper:#fff; --soft:#f4f6f8; --accent:#2457d6; --high:#b42318; --medium:#9a6700; --low:#157347; }
+    * { box-sizing:border-box; }
+    body { margin:0; overflow-x:hidden; background:var(--soft); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.65; }
+    main { width:min(1180px,calc(100% - 32px)); max-width:calc(100vw - 32px); margin:32px auto; background:var(--paper); padding:clamp(24px,5vw,60px); border:1px solid var(--line); border-radius:16px; }
+    h1 { font-size:clamp(30px,5vw,48px); line-height:1.12; margin:0 0 12px; }
+    h2 { margin-top:56px; padding-bottom:10px; border-bottom:2px solid var(--ink); }
+    h3 { margin-top:30px; }
+    .meta { display:flex; flex-wrap:wrap; gap:8px 20px; color:var(--muted); }
+    .summary { margin:30px 0; padding:22px; background:#eef3ff; border-left:4px solid var(--accent); border-radius:10px; }
+    .card { margin:18px 0; padding:20px; border:1px solid var(--line); border-radius:12px; break-inside:avoid; }
+    .high { color:var(--high); font-weight:750; } .medium { color:var(--medium); font-weight:750; } .low { color:var(--low); font-weight:750; }
+    table { width:100%; border-collapse:collapse; margin:18px 0 30px; font-size:14px; }
+    th,td { padding:11px; border:1px solid var(--line); vertical-align:top; text-align:left; }
+    th { background:#edf0f4; }
+    .muted { color:var(--muted); }
+    h1,h2,h3,p,.summary,.meta span { overflow-wrap:anywhere; }
+    footer { margin-top:56px; color:var(--muted); font-size:13px; }
+    @media (max-width:800px) { table { display:block; overflow-x:auto; } th,td { min-width:150px; } }
+    @media print { body { background:#fff; } main { width:100%; margin:0; border:0; padding:24px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>式札かさね UT分析評価レポート</h1>
+    <div class="meta">
+      <span>UT実施日: 2026-09-01</span><span>モード: hybrid</span><span>参加者: 人間 0名／AI観点 1（AI-P01・検品担当が代行）</span><span>分析日: 2026-09-01</span><span>run-id: k2s7</span><span>分析: 講評担当（ナルカ）</span>
+    </div>
+  </header>
+
+  <div class="summary">
+    <strong>本レポートの立場:</strong> 観察事実から課題を構造化し、根本課題を同定する。観察、解釈、改善案を混同しない。
+    改善の論点は最後に「次工程への論点」として分けて書く。<strong>人間の参加者は0名</strong>で、頻度の主張は一切しない。
+    ただし機械の再現率（5/5・10/10・20/20）は実測なのでそのまま使う。
+  </div>
+
+  <section><h2>A. 分析方法とデータ範囲</h2>
+  <ul>
+    <li><strong>入力</strong>: <code>session.json</code>（closed・12件）／<code>results.jsonl</code>（14行＝A-3・C-7 は2行ずつ）／<code>UT結果ログ_2026-09-01.md</code>／シナリオ2種／<code>docs/SPEC.md</code> §2・§3・§4・§7〜§7-c／<code>src/game.js</code>（<code>begin()</code>・<code>newSlab()</code>・<code>place()</code>・<code>showGameOver</code>）／観察の生データ <code>obs.json</code>〜<code>obs5.json</code>／わいわい MCP <code>get_top_scores</code>（09-01）。</li>
+    <li><strong>整合</strong>: session の完了ID 12 と results のID集合は一致。重複レコード無し（同じIDの2行は別の観察）。participant は AI-P01 のみで匿名。証拠パスは全件 run ディレクトリに実在（付録）。cleanup は completed で UX 問題には含めない。</li>
+    <li><strong>制約</strong>: 音は未聴／わいわいの枠の中は未実施（stub で代替）／Artifact の CSP は未再現／人の初見の言語化・迷いは原理的に演じられないので未実施（G の「inferred」欄）。最初の観察スクリプトは押せる前にクリックしていて、撮り直している（結果ログの制約欄）。</li>
+    <li><strong>枠組み</strong>: Nielsen 10（UI の課題だけに付ける）／効果・効率・満足／UX5段階。前回レポートは無い（本作は初回）。</li>
+  </ul></section>
+
+  <section><h2>B. エグゼクティブサマリー</h2>
+  <p>12シナリオ中、受入NGが2件・摩擦ありが2件。NG 2件は<strong>同じ一つの仕組み</strong>から出ている——<strong>札は台から270px外に現れて台へ進入してくるのに、入力の解禁がそれより早い</strong>。帳が消えた直後（約0.5秒）と「もう一夜」の直後（0.7〜1.3秒）に押すと、札は必ず台の外にあって空振り＝<strong>0段の夜明け</strong>になる（10/10・5/5 で再現、窓の外なら 20/20 で置ける）。しかもこの作品は<strong>0段の夜も全国番付へ score 0 を送る</strong>（stub と本物 SDK の standalone で確認。宵あらわしは「0柱の夜は送らない」と決めている）。つまり<strong>いちばん急いで押した初見の人ほど、最初の夜が0段で終わり、その0が全国の番付に載る</strong>。本番ボード（09-01）に 0 の行はまだ無いが、載る筋は開いている。</p>
+  <p>それ以外は仕様どおりに動いている: 帳の時間割（+47／+1697／+3287ms）、8段ごとの交代、80段の満願、結果札の収まり（375×667 でも送り無し）、再読み込みで 0 が見えないこと、稽古の隠し方。開いてから押せるまで 2.2秒（御霊おとしは 1.26秒）、帳を合わせて<strong>最初の有効な一手まで最短約6秒</strong>は事実として記録する（長いかどうかは人の実感が要る）。</p>
+  </section>
+
+  <section><h2>C. 観察結果の分布</h2>
+  <table><thead><tr><th>状態</th><th>件数</th><th>シナリオ</th></tr></thead><tbody>
+  <tr><td>完了 / 受入OK</td><td>8</td><td>A-1 A-2 A-3(通常) B-5 B-6 C-8 C-10 D-11 E-12 のうち摩擦なし</td></tr>
+  <tr><td>摩擦あり完了 / 受入OK</td><td>2</td><td>B-4（素人のリズムで2段） C-9（結果画面から音を止められない）</td></tr>
+  <tr><td>失敗 / 受入NG</td><td>2</td><td>A-3（早押し→0段） C-7（再開直後→0段）</td></tr>
+  <tr><td>未実施の次元</td><td>—</td><td>人の言語化・音・実枠の番付・幅回復・稽古の発見性・実機</td></tr>
+  </tbody></table>
+  <table><thead><tr><th>Nielsen</th><th>件数</th></tr></thead><tbody>
+  <tr><td>#5 エラー予防</td><td>3（A-3ng・C-7ng・C-10）</td></tr><tr><td>#1 可視性</td><td>5</td></tr><tr><td>#3 制御と自由</td><td>1（C-9）</td></tr><tr><td>#6 認識／#8 最小限／#9 回復／#10 ヘルプ</td><td>各1</td></tr><tr><td>非UI（配布・保存経路）</td><td>2（D-11・C-8）＝番号を付けない</td></tr>
+  </tbody></table></section>
+
+  <section><h2>D. 根本課題</h2>
+  <article class="card"><h3>R-1. 札が台に着く前に、指が解禁される</h3>
+    <p><span class="high">確信度: high</span> — 独立した3系統の証拠が一致: 時刻別のタップ試行（+3300/3500 不可・+3700/3900 可、再開後 +800〜1200 不可・+1400 可）、コマ撮り（+3300／+3450 で札が台の外、+3600 で重なり始め）、コード（<code>newSlab()</code> が <code>top ± (F0+80)</code> に出し、<code>place()</code> は <code>pausedUntil</code> だけを見る）。再現 10/10・5/5・20/20。</p>
+    <p><strong>因果連鎖:</strong> 札は台から270px外に現れ170px/sで進入する → 入力の解禁（帳 3150ms／再開 700ms）が札の到着（約+0.5秒後）より早い → その窓で押すと <code>overlap ≤ 4</code> の空振い → <strong>0段の夜明け</strong>。帳が開いた瞬間・「もう一夜」を押した直後は、いちばん押したくなる瞬間でもある。</p>
+    <p><strong>根拠:</strong> O-04（A-3 ng）・O-09（C-7 ng）・O-02（A-2 コマ）・O-03（窓の外は 20/20）。<strong>反証:</strong> 窓の外で押せば必ず置ける。人がこの窓で押すかは未実施（inferred）。</p>
+  </article>
+  <article class="card"><h3>R-2. 0段の夜が全国番付へ送られる</h3>
+    <p><span class="high">確信度: high</span> — stub SDK で <code>submitScore("main", 0, {title:"宵の口"})</code> を直接観測。file:// で本物の SDK（standalone）も <code>waiwai:score:main</code> に score 0 を保存。<code>canSubmitScore()</code> は稽古と自動プレイだけを塞ぎ、段数は見ない（SPEC §7-b にも 0 の扱いは無い）。宵あらわしは「0柱の夜は送らない＝番付に0の行を作らない」を明文化している。</p>
+    <p><strong>因果連鎖:</strong> R-1 で0段の夜が起きる → そのまま送信 → 「最高記録を更新」「全国◯位」が0段に対して出る（O-12 のカード）→ 番付に「ナナシ 0段（浄化0）」の行が積まれる。本番ボード（09-01: 8053・8053・1104・300）に 0 は<strong>まだ</strong>無い。</p>
+    <p><strong>根拠:</strong> O-12（C-10）・O-13（D-11 の localStorage）。<strong>受入差分の分類:</strong> 要件の欠け（SPEC 未記載）＋シリーズ内の不整合（宵あらわしとの差）。</p>
+  </article>
+  <article class="card"><h3>R-3. 開いてから最初の有効な一手まで、約6秒</h3>
+    <p><span class="medium">確信度: medium</span> — 時間は実測（押せるまで 2.24秒・帳 3.29秒・札の到着 +0.5秒）。ただし「長い」と感じるかは人の実感でしか決まらず、未実施。設計値（SHITSURAE §1: 絵1.2秒＋カード0.7秒＝1.9秒／御霊おとしの実測 1.26秒）より 0.3〜1.0秒遅い。</p>
+    <p><strong>因果連鎖:</strong> 絵→カード（2.2秒）→帳（3.3秒）→札の進入（0.5秒）が直列で、飛ばす口が無い → 初見の待ち時間が積み上がる。R-1 の窓は、この待ちの<strong>いちばん最後に</strong>ある。</p>
+    <p><strong>根拠:</strong> O-01（A-1）・O-02（A-2）・O-04。</p>
+  </article>
+  <article class="card"><h3>R-4. 夜の終わりで、できることが減る</h3>
+    <p><span class="high">確信度: high（影響は小）</span> — 結果画面では ♪ の上に <code>#overlay</code> が乗っていて押せない（<code>elementFromPoint</code>＝overlay・class 不変）。SDK が読めない経路（Artifact）では <code>#final-rank</code> ごと隠れるため、初めて記録を出した夜でも「最高記録を更新」が出ない。</p>
+    <p><strong>因果連鎖:</strong> 結果札が全画面の覆い（fixed inset:0）で HUD を覆う → 覆いの外の釦が届かない。順位と更新の印が同じ器に入っている → 順位が取れない環境では更新の印まで消える。</p>
+    <p><strong>根拠:</strong> O-11（C-9）・O-08（C-7）。</p>
+  </article>
+  <article class="card"><h3>R-5. 記録の置き場が経路で3通りある（課題ではなく、把握しておく事実）</h3>
+    <p><span class="low">確信度: low（課題かどうかが未確定）</span> — sdk.js 遮断＝旧4キーに直書き／file:// で本物 SDK＝<code>waiwai:fudakasane_save</code> の束／枠の中＝タウン側。同じ人が Artifact→Pages→枠と渡り歩くと記録は引き継がれない。設計どおり（SPEC §7-a「進捗は共有されない」）であり、ここでは事実として残すに留める。</p>
+    <p><strong>根拠:</strong> O-08・O-10・O-13。</p>
+  </article>
+  </section>
+
+  <section><h2>E. インパクト分析</h2>
+  <table><thead><tr><th>根本課題</th><th>効果（達成できるか）</th><th>効率</th><th>満足・信頼</th><th>重大性</th></tr></thead><tbody>
+  <tr><td>R-1</td><td><strong>最初の夜が0段で終わる</strong>（窓で押した場合は必ず）</td><td>もう一夜を押しても同じ窓がある</td><td>「押したのに負けた」＝操作の信頼を最初に失う</td><td class="high">高</td></tr>
+  <tr><td>R-2</td><td>—</td><td>—</td><td>番付に0段の行・0段に「最高記録を更新」。腕前で見せ合う場が薄まる（会社ノートの芯に触れる）</td><td class="high">高（R-1 と束で）</td></tr>
+  <tr><td>R-3</td><td>—</td><td>約6秒の待ち。飛ばせない</td><td>演出として受け取れれば損は無い（未実施）</td><td class="medium">中</td></tr>
+  <tr><td>R-4</td><td>—</td><td>結果画面で音を止めるには「もう一夜」を挟む</td><td>Artifact では更新の印が出ない</td><td class="low">低</td></tr>
+  <tr><td>R-5</td><td>—</td><td>—</td><td>経路を跨ぐと記録が消えたように見えうる（未観測）</td><td class="low">低</td></tr>
+  </tbody></table></section>
+
+  <section><h2>F. UX層別分析</h2>
+  <table><thead><tr><th>層</th><th>該当</th><th>読み</th></tr></thead><tbody>
+  <tr><td>戦略</td><td>—</td><td>「腕前で見せ合う」という作品の狙い自体は観察に矛盾しない</td></tr>
+  <tr><td>要件</td><td>R-2</td><td>0段の扱いが仕様に無い。シリーズ内で宵あらわしだけが決めている</td></tr>
+  <tr><td>構造</td><td>R-1・R-5</td><td>時間割（解禁と到着）の順序の問題。見た目を変えずに直せる層</td></tr>
+  <tr><td>骨格</td><td>R-3・R-4</td><td>開幕の直列と、結果札の覆いの範囲</td></tr>
+  <tr><td>表層</td><td>B-4 の「浄化 ×71／×72」の重なり</td><td>一瞬。根本課題には束ねない</td></tr>
+  </tbody></table></section>
+
+  <section><h2>G. 個別観察</h2>
+  <table><thead><tr><th>ID</th><th>シナリオ</th><th>観点</th><th>task</th><th>acceptance</th><th>観察（要約）</th><th>証拠強度</th><th>Nielsen</th><th>影響</th><th>UX層</th><th>根本課題</th></tr></thead><tbody>
+<tr><td>O-01</td><td>A-1</td><td>AI observation</td><td>completed</td><td>ok</td><td>URLを開くと札絵（咲耶）が全画面に出る（#title-overlay は art-in）。案内カードは opacity 0・pointer-events none のまま置かれ、2.08秒で ready が付き、opacity が0.95に達して押せるようになったのは開いてから2.24秒（1280×800 のPCでも2.22秒）。カードの中身: 題字「式札かさね」28px／副題「— 月蝕綺譚 -Luna Occulta- 二次創作 —」12px／世界観3…</td><td>direct</td><td>#1 可視性／#8 最小限</td><td>効率</td><td>骨格</td><td>R-3</td></tr>
+<tr><td>O-02</td><td>A-2</td><td>AI observation</td><td>completed</td><td>ok</td><td>「月夜に入る」を押すと案内カードが消え（+47ms）、#door が show＝黒緞子の帳が閉じた状態で盤面を覆う（合わせ目に金襴の帯）。+1697ms で open（仕様 1650）、+3287ms で show が外れ帳が消える（仕様 3250）。帳のあいだ（+626ms・+2940ms）に盤面をタップしても段は 0 のまま。音の選択は保存された（sdk.js を遮断した環境では旧キー fudakasane_sound=on に直書き）。帳が消えた時点…</td><td>direct</td><td>#1 可視性</td><td>効率</td><td>構造</td><td>R-3</td></tr>
+<tr><td>O-03</td><td>A-3</td><td>AI observation</td><td>completed</td><td>ok</td><td>帳が消えてから約600ms後（押してから約3.9秒）に盤面中央をタップすると段が 0→1 になり、次の札が出た。帳が消えたあと 400〜1600ms の無作為なタイミングで1回だけタップする試行を20回行い、20回とも段 1 に置けた（空振り 0）。…</td><td>direct（再現率つき）</td><td>#5 エラー予防</td><td>効果・信頼</td><td>構造</td><td>R-1</td></tr>
+<tr><td>O-04</td><td>A-3</td><td>AI observation</td><td>failed</td><td>ng</td><td>同じ最初の1枚で、帳が消えた直後（押してから +3300ms・+3500ms）にタップすると段は 0 のまま増えず、+3700ms・+3900ms なら段 1 に置けた。+3500ms に1回だけタップして以後何も押さない試行では、1.0秒後に「札は夜に呑まれた」の結果札が 0段・称号「宵の口」で出た（＝空振りとして処理されている）。+3500ms→+4400ms、+3500ms→+5500ms の2回タップ型はそれぞれ5回中5回が 0段で夜明け、+380…</td><td>direct（再現率つき）</td><td>#5 エラー予防</td><td>効果・信頼</td><td>構造</td><td>R-1</td></tr>
+<tr><td>O-05</td><td>B-4</td><td>AI observation</td><td>completed-with-friction</td><td>ok</td><td>900ms 間隔で盤面中央をタップする（素人のリズム）と、1回目で段 2、2回目は段が増えず、3回目で「札は夜に呑まれた」（2段）。ぴったりの見た目は #autotest で確認: 3段目の浄化で天面に金の環と粒、札の上に金文字「浄化 ×3」が出て、以後 ×9、×72 と続いた。72段では直前の「浄化 ×71」が薄く残った上に「浄化 ×72」が重なって見える瞬間があった。5連続で幅が +6px 戻る仕様は今回測っていない（#autotest は全段ぴったり…</td><td>direct／inferred（摩擦）</td><td>#1 可視性</td><td>効率</td><td>骨格</td><td>R-1（周辺）</td></tr>
+<tr><td>O-06</td><td>B-5</td><td>AI observation</td><td>completed</td><td>ok</td><td>HUD の見出しは「段」「最高」「御霊」。御霊の顔は段が 8・16・24・32・40・48・56・64・72 になった瞬間に切り替わった（8段ごと・次の札の御霊を先に示す）。9段の画面では天面が於兎の札絵、月は三日月。72段の画面では月がほぼ満ち、札の側面に「栞の段」の金文字、側面の縁が金。速度の変化は測っていない。…</td><td>direct</td><td>#1 可視性／#6 認識</td><td>満足</td><td>表層／骨格</td><td>—</td></tr>
+<tr><td>O-07</td><td>B-6</td><td>AI observation</td><td>completed</td><td>ok</td><td>自力では届かないため進行役が #autotest（全段ぴったり・記録と番付には送らない）で見せた。72段到達は開始 69.6秒、80段で 75.6秒に結果札が出た。結果札は金泥の縁で「満月成就」「喰われた月へ、道が架かった」栞の札絵、「栞／月に、届きました。お見事ですこと、あるじどの」「称号 満月成就」「重ねた段 80段」「もう一夜」。カードの高さは 653.6px（390×844・下端 748.8）、375×667 では 587.6px（下端 627.3…</td><td>direct（自動プレイ）</td><td>—</td><td>満足</td><td>表層</td><td>—</td></tr>
+<tr><td>O-08</td><td>C-7</td><td>AI observation</td><td>completed</td><td>ok</td><td>#autocut（わざと40pxずらす・記録と番付には送らない）で 8段の夜明け（開始 17.5秒）。結果札: 蝕紅の「札は夜に呑まれた」22px／「重ねた道は、ここまで」／到達した御霊（餡音）の札絵／「称号 札運びの見習い」17px／「重ねた段 8段」／「もう一夜」228.8×44px。390×844 でカード高 541.4px（下端 692.7）、375×667 で 482.4px（下端 574.7）、どちらも「もう一夜」は画面内で送り無し。sdk.j…</td><td>direct</td><td>#1 可視性／#9 回復</td><td>効果・信頼</td><td>構造</td><td>R-1／R-4</td></tr>
+<tr><td>O-09</td><td>C-7</td><td>AI observation</td><td>failed</td><td>ng</td><td>手で遊んだ夜明け（早押しで0段）→「もう一夜」→ +800ms・+1000ms・+1200ms のタップはいずれも段 0 のまま「札は夜に呑まれた」（0段で二度目の夜明け）。+1400ms・+1800ms なら段 1 に置けた。期待（「もう一夜」で再開し、直後 700ms の無入力のあとは置ける）に対し、700ms を過ぎてもさらに約0.5〜0.6秒は札が台の外にあり、そこでのタップは空振りになる。…</td><td>direct</td><td>#1 可視性／#9 回復</td><td>効果・信頼</td><td>構造</td><td>R-1／R-4</td></tr>
+<tr><td>O-10</td><td>C-8</td><td>AI observation</td><td>completed</td><td>ok</td><td>8段（別試行では9段）の夜のあと再読み込み。HUD の「最高」は 0 のまま 1493ms 時点で 9 に切り替わったが、そのあいだ案内カードの opacity は 0〜0.03 で、押せる状態（ready・opacity≥0.95）になったのは 2078ms。つまり 0 が見える瞬間は無い。カードには副題の下に「これまでの誉れ：札運びの見習い」（12px・291×17px）が出る。記録は旧キーから読まれた。…</td><td>direct</td><td>#6 認識</td><td>信頼</td><td>骨格</td><td>R-5</td></tr>
+<tr><td>O-11</td><td>C-9</td><td>AI observation</td><td>completed-with-friction</td><td>ok</td><td>遊びの途中（#autotest・7秒）で HUD 右の「♪」（30×30px・aria-label「音の切り替え」・中心の最前面は #mute 自身）を押すと class が off↔空 で切り替わり、off のときは文字色が補助色になり取り消し線が付く（#mute.off）。押した後も段は 2→4 と進み盤面は止まらない。音の好みは保存された（fudakasane_sound）。結果札が出ている画面では「♪」の中心の最前面は #overlay で、押して…</td><td>direct</td><td>#3 制御と自由</td><td>効率</td><td>骨格</td><td>R-4</td></tr>
+<tr><td>O-12</td><td>C-10</td><td>AI observation</td><td>completed</td><td>ok</td><td>sdk.js が読めない環境（Artifact 相当）: 結果札に順位の行は無く「取得できませんでした」の類も無い。README の「番付」節は「わいわいタウンの中で遊んだ夜だけ載る」と書いてある。SDK を stub（bridged・上位2件・total 3）にして手で遊んだ夜明け（0段）: 「最高記録を更新」と「全国 3 位 ／ 3人中 ›」（<button>）が出て、押すと番付が開く（「番付／全国 3人／1 ヒロ 11段（浄化5）／2 ナナシ 8段（…</td><td>direct（stub）／unknown（実枠）</td><td>#5 エラー予防（要件）</td><td>信頼</td><td>要件</td><td>R-2</td></tr>
+<tr><td>O-13</td><td>D-11</td><td>AI observation</td><td>completed</td><td>ok</td><td>dist/artifact.html（10.9MB）を file:// で開くと 278ms で load、押せるまで 2.24秒、pageerror 0。案内カード・HUD は index.html 版と同じ文言・同じ寸法。file:// では sdk.js（waiwai.town）が読めるため本物の SDK が standalone で動き、記録は束 waiwai:fudakasane_save に書かれた。Artifact 本番の CSP（外部スクリ…</td><td>direct（CSP未再現）</td><td>—</td><td>効果</td><td>構造</td><td>R-5</td></tr>
+<tr><td>O-14</td><td>E-12</td><td>AI observation</td><td>completed</td><td>ok</td><td>題字「式札かさね」を 0／800／1600ms の3回タップしても表示は変わらず、0／200／400ms の3回で副題の下に「／ 稽古（札が欠けない）」（12px）が出た。稽古のまま #autocut（毎回40pxずらす）を15秒動かしても夜明けは出ず 7段まで積めた。稽古の到達が記録に残らないことは同日の playtest 3ルート（稽古で80段→best 0・称号空・旧キー無し）で確認済み。隠しなので人が見つけられるかは未実施。…</td><td>direct</td><td>#10 ヘルプ</td><td>満足</td><td>要件</td><td>—</td></tr>
+  </tbody></table>
+  <p class="muted">全文は <code>runs/2026-09-01-k2s7/UT結果ログ_2026-09-01.md</code>。「観点」はすべて AI observation（人間参加者は0名）。</p>
+  </section>
+
+  <section><h2>H. 参加者・観点別の寄与</h2>
+  <p>AI-P01（検品担当の代行）1観点のみ。人間の参加者は0名。AI の寄与は「時刻・座標・状態・再現率」の直接観察に限られ、「迷い」「分かりにくさ」は一切測っていない。逆に、人がやらない反復（同じ操作を20回）ができたので、R-1 の窓は<strong>人のテストでは偶然にしか出ない再現率</strong>が取れた。</p>
+  </section>
+
+  <section><h2>I. 結論</h2>
+  <p><strong>公開可否:</strong> 公開済みの作品なので「条件付き」——<strong>R-2 と R-1 は次の更新で塞ぐ</strong>。本家入りの打診が進行中で、先方が最初に触る一手が R-1 の窓に落ちる筋がある。</p>
+  <p><strong>着手順（捨てる線ではない）:</strong> ① R-2（0段の夜は送らない・宵あらわしと同じ規則。1か所の判定で塞げて番付を守る） → ② R-1（札が台に重なるまで入力を解禁しない、または解禁時に札が台に重なる位置から出す。時間割は SHITSURAE §1 の作法で「声を聴いてから」） → ③ R-3（押せるまでの時間と帳を飛ばす口。オーナーの実感待ち） → ④ R-4（結果画面の ♪・更新の印の器の分離） → ⑤ R-5（記録の経路の一覧を README に）。上位に入らなかった「浄化 ×71／×72 の重なり」は次の作業の頭に回す。</p>
+  <p><strong>次に人で埋めるもの:</strong> 帳が開いた瞬間に押すか（R-1 の発生頻度）／約6秒の待ちの実感（R-3）／音の実聴／実枠の番付。</p>
+  <p><strong>次工程への論点（改善案・分析とは別枠）:</strong> R-1 は「解禁を札の到着に合わせる」か「到着前のタップを無視する」かの二択で、後者は SPEC §7 の「開始直後700ms無入力」と同じ作法。R-2 は <code>canSubmitScore()</code> に <code>floors &gt; 0</code> を足すだけだが、「0段でも自己ベスト更新の印は出すか」は裁定が要る。</p>
+  </section>
+
+  <section><h2>付録. 証拠と追跡対応</h2>
+  <table><thead><tr><th>ID</th><th>シナリオ</th><th>証拠</th></tr></thead><tbody>
+<tr><td>O-01</td><td>A-1</td><td><code>screenshots/A-1a-open-300ms.png</code><br><code>screenshots/A-1b-card.png</code><br><code>screenshots/A-1c-card-pc.png</code><br><code>obs2.json A1.readyTimeline（50ms刻み）</code><br><code>obs4.json pcPressableMs=2217</code></td></tr>
+<tr><td>O-02</td><td>A-2</td><td><code>screenshots/A-2a-door-closed.png</code><br><code>screenshots/A-2b-door-opening.png</code><br><code>screenshots/A-2c-board.png</code><br><code>screenshots/A-2d-after-door-3300ms.png</code><br><code>screenshots/A-2d-after-door-3450ms.png</code><br><code>screenshots/A-2d-after-door-3600ms.png</code><br><code>obs2.json A2.doorLog / lockedTap</code><br><code>src/game.js newSlab(): start = top ± (F0+80)</code></td></tr>
+<tr><td>O-03</td><td>A-3</td><td><code>screenshots/A-3a-before.png</code><br><code>screenshots/A-3b-after-tap.png</code><br><code>screenshots/A-3c-next-card.png</code><br><code>obs2.json A3</code><br><code>obs4.json miss（20試行）</code></td></tr>
+<tr><td>O-04</td><td>A-3</td><td><code>screenshots/A-2d-after-door-3300ms.png</code><br><code>screenshots/A-2d-after-door-3450ms.png</code><br><code>screenshots/C-7d-zero-floor-night-from-early-tap.png</code><br><code>obs4.json window（3300/3500 不可・3700/3900 可）</code><br><code>obs5.json（5回×3型）</code><br><code>kasane-ut7: single tap 3500ms → overlay after 1000ms, floors 0</code></td></tr>
+<tr><td>O-05</td><td>B-4</td><td><code>screenshots/B-4a-naive-taps.png</code><br><code>screenshots/B-4b-purify.png</code><br><code>screenshots/B-6a-floor72-shiori.png</code><br><code>obs2.json B4.seq</code></td></tr>
+<tr><td>O-06</td><td>B-5</td><td><code>screenshots/B-5a-floor9-oto.png</code><br><code>screenshots/B-5b-floor24.png</code><br><code>screenshots/B-6a-floor72-shiori.png</code><br><code>obs.json B6.faceLog</code></td></tr>
+<tr><td>O-07</td><td>B-6</td><td><code>screenshots/B-6a-floor72-shiori.png</code><br><code>screenshots/B-6b-floor79.png</code><br><code>screenshots/B-6c-clear-card.png</code><br><code>screenshots/B-6d-clear-card-se.png</code><br><code>obs.json B6 / B6_se</code></td></tr>
+<tr><td>O-08</td><td>C-7</td><td><code>screenshots/C-7a-gameover-iphone.png</code><br><code>screenshots/C-7a-gameover-se.png</code><br><code>screenshots/C-7b-retry-iphone.png</code><br><code>obs.json C7_iphone / C7_se</code></td></tr>
+<tr><td>O-09</td><td>C-7</td><td><code>kasane-ut9: retry +800/1000/1200 → floors 0 & overlay / +1400,+1800 → floors 1</code></td></tr>
+<tr><td>O-10</td><td>C-8</td><td><code>screenshots/C-8-reload-title.png</code><br><code>obs2.json C8.timeline</code></td></tr>
+<tr><td>O-11</td><td>C-9</td><td><code>screenshots/C-9-muted.png</code><br><code>obs4.json mute / muteOnResult</code><br><code>src/page.html #mute.off</code></td></tr>
+<tr><td>O-12</td><td>C-10</td><td><code>screenshots/C-10-zero-floor-night.png</code><br><code>screenshots/C-10-banzuke-stub.png</code><br><code>obs3.json zero.submits / zero.banzuke</code><br><code>obs2.json D11.ls（waiwai:score:main）</code><br><code>waiwai MCP get_top_scores(shikifuda-kasane, main) 09-01</code></td></tr>
+<tr><td>O-13</td><td>D-11</td><td><code>screenshots/D-11a-artifact-load.png</code><br><code>screenshots/D-11b-artifact-card.png</code><br><code>screenshots/D-11c-artifact-board.png</code><br><code>obs2.json D11</code></td></tr>
+<tr><td>O-14</td><td>E-12</td><td><code>screenshots/E-12a-practice-label.png</code><br><code>screenshots/E-12b-practice-autocut-15s.png</code><br><code>obs.json E12</code><br><code>playtest.js 2026-09-01 実行ログ</code></td></tr>
+  </tbody></table>
+  <p class="muted">設定: <code>ut.config.yaml</code>／シナリオ: <code>docs/ut/scenarios/UTシナリオ_20260901_*.html</code>／run: <code>docs/ut/runs/2026-09-01-k2s7/</code>（session.json・results.jsonl・baseline.md・cleanup-plan.md・obs*.json・screenshots 33枚）。</p>
+  </section>
+
+  <footer>Generated from UT evidence · 式札かさね 2026-09-01 v1 · 分析: 講評担当（ナルカ）</footer>
+</main>
+</body>
+</html>

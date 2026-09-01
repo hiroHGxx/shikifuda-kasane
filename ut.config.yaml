@@ -1,0 +1,84 @@
+# 式札かさね — ユーザーテスト設定（目付）
+#
+# 目的: 公開（2026-08-22）から10日、大型更新（08-30〜31: 番付・セーブ保全・意匠・帳）まで通して、
+#       この作品だけ「初見の人が遊べるか」を見る工程（目付）が一度も無い。健診の2本立て
+#       （目付＝動き／金継ぎ＝見た目）のうち金継ぎは 08-30 に済んでいるので、残る片翼を埋める。
+#       本家入りの打診が進行中の作品でもあり、動きの穴を先に潰しておく価値が高い。
+#
+# このプロジェクト固有の事情（御霊おとしの設定を土台に、違うところだけ書く）:
+#   - 対象は canvas ゲーム（等角2.5Dの積み上げ）。盤面は DOM に出ないので、観察の証拠は
+#     「スクリーンショット」と「DOM に出る HUD（#score/#best/#spirit-face）・overlay の状態」の2本立て。
+#   - 画面遷移は URL では起きない。観察の「画面名」は要素 id で書く:
+#     title-overlay（案内カード）／door（帳）／(盤面)／overlay + result-card（夜明け・.clear で満月成就）／banzuke（番付）
+#   - **記録は1キー `fudakasane_save` の束**（best / title / titleRank / sound）。わいわいの枠の外では
+#     SDK が localStorage に落ちるので、**本番 origin で遊ぶとオーナーの最高段・称号が書き換わる**。
+#     よって UT は本番 origin では行わず、ローカルの静的サーバー（別 origin＝記録が空＝初見の状態）で行う。
+#   - **全国番付はわいわいタウンの枠（iframe）の中でしか成立しない**。自動操作のブラウザでは
+#     クロスオリジン iframe の中身が描画されないため、番付の行と一覧は **UT では構造的に見えない**
+#     （SHITSURAE §9「AIが確かめられない領域」）。この次元は未実施のまま残し、埋めない。
+#   - 課金・送信・外部影響: 枠の外で開く限り submitScore は端末内（`local:true`）で完結し、
+#     外へは何も出ない。念のため観察スクリプトでは sdk.js を遮断する（playtest.js と同じ作法）。
+#   - 稽古モード（題字を1.5秒以内に3回タップ）と自動プレイのハッシュ（#autotest/#autocut/#autowobble）は
+#     本番ルールで動くが記録も番付も触らない（`canSubmitScore()`）。観察の補助にだけ使い、
+#     参加者向けの文面には出さない。
+
+version: "2.0"
+
+project:
+  name: "式札かさね（しきふだかさね）"
+  type: "browser-game"
+  root: "."
+
+test:
+  mode: "hybrid"
+  environment: "local"
+  base_url: "http://127.0.0.1:8972/"   # 観察スクリプトが起動する静的サーバー（このリポジトリのルートを配信）
+  # 参考: 本番 https://hirohgxx.github.io/shikifuda-kasane/ ／ わいわい https://waiwai.town/apps/shikifuda-kasane ／ Artifact配布版 dist/artifact.html
+  participant_profile: "スマホ／PCのブラウザでリンクを踏んで初めて来た人。『月蝕綺譚』を知っている人が主だが、Stack式（積み上げ）の遊びと本作の固有ルール（浄化・幅の回復・八十段の満月成就・稽古・番付）は知らない"
+  participant_count: 1
+  moderator: "qa"        # 検品担当（結）。観察のみ。解釈は入れない
+  locale: "ja-JP"
+
+sources:
+  requirements:
+    - "docs/SPEC.md"          # 実装仕様＝受入判定の正本（§1〜§10）
+    - "README.md"             # 外向けの説明（遊び方・番付の記述はここが初見の人の入口）
+  design:
+    - "src/page.html"         # DOM とスタイルの実体
+    - "src/game.js"           # 進行・入力・演出・保存・番付
+    - "docs/DEVELOPMENT.md"   # 制作記録（§8〜§13 が 08-30〜31 の更新、末尾が 09-01 の安全余白）
+    - "docs/VOICE.md"         # 台詞12場面の設計
+  change_sources: ["git"]
+  requirement_id_pattern: ""  # 要件IDの体系は無い。SPEC.md の節番号（§3 §7-b …）で追う
+
+artifacts:
+  root: "docs/ut"
+  format: "html"
+  create_participant_view: true
+  create_moderator_view: true
+
+execution:
+  order: ["non-mutating", "reversible-mutation", "irreversible-or-external-effect"]
+  allow_production_mutation: false   # 本番 origin の記録（fudakasane_save）を書き換えない
+  require_confirmation_for_external_effects: true
+
+test_data:
+  enabled: false
+  # 理由: このゲームが作るデータは localStorage の1キー（fudakasane_save）だけで、
+  #       UT はそれが空の別 origin で行う。接頭辞を付ける対象が存在しない。片付けは「UT用 origin ごと捨てる」。
+  cleanup: "assisted"
+  require_baseline: true      # 開始前に localStorage の中身（空であること）を控える
+  require_dry_run: true
+  require_explicit_approval: true
+
+observation:
+  capture_task_time: true
+  capture_quotes: true
+  capture_screenshots: "required"   # canvas の中身は画像でしか残らない
+  anonymize_participants: true
+  recording: "disabled"
+
+analysis:
+  frameworks: ["nielsen-10", "impact-effect-efficiency-satisfaction"]
+  root_issue_target: "3-5"
+  confidence_levels: ["high", "medium", "low"]

@@ -1,0 +1,775 @@
+{
+  "meta": {
+    "started": "2026-09-01T01:34:55.548Z",
+    "base": "http://127.0.0.1:8972/",
+    "finished": "2026-09-01T01:38:51.041Z"
+  },
+  "baseline_ls": {},
+  "A1": {
+    "cardMs": 999,
+    "texts": [
+      {
+        "tag": "DIV",
+        "t": "式札かさね",
+        "fs": "28px"
+      },
+      {
+        "tag": "DIV",
+        "t": "— 月蝕綺譚 -Luna Occulta- 二次創作 —",
+        "fs": "12px"
+      },
+      {
+        "tag": "LI",
+        "t": "宵闇を往き来する式札を、タップでとどめて重ねる",
+        "fs": "12px"
+      },
+      {
+        "tag": "LI",
+        "t": "ずれたぶんは夜に喰われ、札は細くなる",
+        "fs": "12px"
+      },
+      {
+        "tag": "LI",
+        "t": "ぴったり重ねれば浄化——札は幅を取り戻す",
+        "fs": "12px"
+      },
+      {
+        "tag": "LI",
+        "t": "八十段の高みで、満月に逢える",
+        "fs": "12px"
+      },
+      {
+        "tag": "BUTTON",
+        "t": "月夜に入る",
+        "fs": "15px"
+      },
+      {
+        "tag": "DIV",
+        "t": "※ 音が鳴ります（イヤホン推奨）",
+        "fs": "12px"
+      },
+      {
+        "tag": "BUTTON",
+        "t": "静かに入る — 音なし",
+        "fs": "12px"
+      }
+    ],
+    "start": {
+      "x": 49.5,
+      "y": 512.6,
+      "w": 291.1,
+      "h": 49,
+      "bottom": 561.6,
+      "fs": "15px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "月夜に入る"
+    },
+    "startSilent": {
+      "x": 49.5,
+      "y": 598.6,
+      "w": 291.1,
+      "h": 37,
+      "bottom": 635.6,
+      "fs": "12px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "静かに入る — 音なし"
+    },
+    "hud": {
+      "floors": "0",
+      "best": "0",
+      "face": "B9+3OPFo2HBcAAAAAElFTkSuQmCC",
+      "labels": [
+        "SHIKIFUDA KASANE",
+        "段",
+        "最高",
+        "御霊"
+      ]
+    },
+    "bestTitle": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "bottom": 0,
+      "fs": "12px",
+      "vis": "visible",
+      "disp": "none",
+      "op": "1",
+      "text": ""
+    },
+    "title": {
+      "x": 49.5,
+      "y": 240.4,
+      "w": 291.1,
+      "h": 40,
+      "bottom": 280.4,
+      "fs": "28px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "式札かさね"
+    },
+    "errs": []
+  },
+  "A2": {
+    "doorLog": [
+      {
+        "ms": 19,
+        "show": false,
+        "open": false
+      }
+    ],
+    "lockedTap": {
+      "atMs": 652,
+      "floorsAfter": "0"
+    },
+    "ls": {},
+    "hud": {
+      "floors": "0",
+      "best": "0",
+      "face": "B9+3OPFo2HBcAAAAAElFTkSuQmCC",
+      "labels": [
+        "SHIKIFUDA KASANE",
+        "段",
+        "最高",
+        "御霊"
+      ]
+    },
+    "errs": []
+  },
+  "A3": {
+    "floorsBefore": "0",
+    "floorsAfter": "0",
+    "tapReactMs": 120,
+    "errs": []
+  },
+  "B4_naive": {
+    "floorsSeq": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "over": false,
+    "errs": []
+  },
+  "C9": {
+    "before": {
+      "x": 337,
+      "y": 26.5,
+      "w": 30,
+      "h": 30,
+      "bottom": 56.5,
+      "fs": "14px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "♪"
+    },
+    "after": {
+      "x": 337,
+      "y": 26.5,
+      "w": 30,
+      "h": 30,
+      "bottom": 56.5,
+      "fs": "14px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "♪"
+    },
+    "ls": {},
+    "overlayShown": false
+  },
+  "C7_iphone": {
+    "overMs": 17534,
+    "card": {
+      "clear": false,
+      "rect": {
+        "y": 151.3,
+        "h": 541.4,
+        "bottom": 692.7
+      },
+      "scrollable": false,
+      "scrollH": 539,
+      "clientH": 539,
+      "fuda": "fuda_anne.webp",
+      "quoteHidden": true,
+      "texts": [
+        {
+          "id": "final-heading",
+          "t": "札は夜に呑まれた",
+          "fs": "22px"
+        },
+        {
+          "id": "final-sub",
+          "t": "重ねた道は、ここまで",
+          "fs": "12px"
+        },
+        {
+          "id": "final-title-label",
+          "t": "称号",
+          "fs": "12px"
+        },
+        {
+          "id": "final-title",
+          "t": "札運びの見習い",
+          "fs": "17px"
+        },
+        {
+          "id": "score-label",
+          "t": "重ねた段",
+          "fs": "12px"
+        },
+        {
+          "id": "",
+          "t": "段",
+          "fs": "18px"
+        },
+        {
+          "id": "retry",
+          "t": "もう一夜",
+          "fs": "14px"
+        }
+      ],
+      "rankLine": {
+        "hidden": true,
+        "text": "",
+        "tag": null
+      },
+      "rankBlock": {
+        "hidden": true,
+        "text": "最高記録を更新"
+      },
+      "allText": "札は夜に呑まれた 重ねた道は、ここまで 称号 札運びの見習い 重ねた段 8段 もう一夜"
+    },
+    "retry": {
+      "x": 80.6,
+      "y": 621.7,
+      "w": 228.8,
+      "h": 44,
+      "bottom": 665.7,
+      "fs": "14px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "もう一夜"
+    },
+    "retryInView": true,
+    "hud": {
+      "floors": "8",
+      "best": "8",
+      "face": "vrrN7ZGAkf0z5r8X9RLlnVwxgflAAAAAElFTkSuQmCC",
+      "labels": [
+        "SHIKIFUDA KASANE",
+        "段",
+        "最高",
+        "御霊"
+      ]
+    },
+    "ls": {
+      "fudakasane_title": "札運びの見習い",
+      "fudakasane_title_rank": "8",
+      "fudakasane_sound": "off",
+      "fudakasane_best": "8"
+    },
+    "errs": [],
+    "retry_flow": {
+      "afterRetry": {
+        "overlay": false,
+        "door": false,
+        "hud": {
+          "floors": "0",
+          "best": "8",
+          "face": "B9+3OPFo2HBcAAAAAElFTkSuQmCC",
+          "labels": [
+            "SHIKIFUDA KASANE",
+            "段",
+            "最高",
+            "御霊"
+          ]
+        }
+      },
+      "tapAt220": "0",
+      "tapAt1000": "0"
+    },
+    "C8": {
+      "seen": [
+        {
+          "ms": 51,
+          "v": {
+            "best": "0",
+            "bt": "",
+            "ov": 1,
+            "cardVisible": true
+          }
+        },
+        {
+          "ms": 1461,
+          "v": {
+            "best": "8",
+            "bt": "これまでの誉れ：札運びの見習い",
+            "ov": 1,
+            "cardVisible": true
+          }
+        }
+      ],
+      "ls": {
+        "fudakasane_title": "札運びの見習い",
+        "fudakasane_title_rank": "8",
+        "fudakasane_sound": "off",
+        "fudakasane_best": "8"
+      },
+      "bestTitle": {
+        "x": 49.5,
+        "y": 295.4,
+        "w": 291.1,
+        "h": 17,
+        "bottom": 312.4,
+        "fs": "12px",
+        "vis": "visible",
+        "disp": "block",
+        "op": "1",
+        "text": "これまでの誉れ：札運びの見習い"
+      }
+    }
+  },
+  "C7_se": {
+    "overMs": 18096,
+    "card": {
+      "clear": false,
+      "rect": {
+        "y": 92.3,
+        "h": 482.4,
+        "bottom": 574.7
+      },
+      "scrollable": false,
+      "scrollH": 480,
+      "clientH": 480,
+      "fuda": "fuda_anne.webp",
+      "quoteHidden": true,
+      "texts": [
+        {
+          "id": "final-heading",
+          "t": "札は夜に呑まれた",
+          "fs": "22px"
+        },
+        {
+          "id": "final-sub",
+          "t": "重ねた道は、ここまで",
+          "fs": "12px"
+        },
+        {
+          "id": "final-title-label",
+          "t": "称号",
+          "fs": "12px"
+        },
+        {
+          "id": "final-title",
+          "t": "札運びの見習い",
+          "fs": "17px"
+        },
+        {
+          "id": "score-label",
+          "t": "重ねた段",
+          "fs": "12px"
+        },
+        {
+          "id": "",
+          "t": "段",
+          "fs": "18px"
+        },
+        {
+          "id": "retry",
+          "t": "もう一夜",
+          "fs": "14px"
+        }
+      ],
+      "rankLine": {
+        "hidden": true,
+        "text": "",
+        "tag": null
+      },
+      "rankBlock": {
+        "hidden": true,
+        "text": "最高記録を更新"
+      },
+      "allText": "札は夜に呑まれた 重ねた道は、ここまで 称号 札運びの見習い 重ねた段 8段 もう一夜"
+    },
+    "retry": {
+      "x": 73.1,
+      "y": 515.7,
+      "w": 228.8,
+      "h": 44,
+      "bottom": 559.7,
+      "fs": "14px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "もう一夜"
+    },
+    "retryInView": true,
+    "hud": {
+      "floors": "8",
+      "best": "8",
+      "face": "vrrN7ZGAkf0z5r8X9RLlnVwxgflAAAAAElFTkSuQmCC",
+      "labels": [
+        "SHIKIFUDA KASANE",
+        "段",
+        "最高",
+        "御霊"
+      ]
+    },
+    "ls": {
+      "fudakasane_title": "札運びの見習い",
+      "fudakasane_title_rank": "8",
+      "fudakasane_sound": "off",
+      "fudakasane_best": "8"
+    },
+    "errs": [],
+    "retry_flow": {
+      "afterRetry": {
+        "overlay": false,
+        "door": false,
+        "hud": {
+          "floors": "0",
+          "best": "8",
+          "face": "B9+3OPFo2HBcAAAAAElFTkSuQmCC",
+          "labels": [
+            "SHIKIFUDA KASANE",
+            "段",
+            "最高",
+            "御霊"
+          ]
+        }
+      },
+      "tapAt220": "0",
+      "tapAt1000": "0"
+    }
+  },
+  "B6": {
+    "faceLog": [
+      {
+        "ms": 339,
+        "floors": 0,
+        "face": "B9+3OPFo2HBcAAAAAElFTkSuQmCC"
+      },
+      {
+        "ms": 15619,
+        "floors": 8,
+        "face": "vrrN7ZGAkf0z5r8X9RLlnVwxgflAAAAAElFTkSuQmCC"
+      },
+      {
+        "ms": 25437,
+        "floors": 16,
+        "face": "wDz6QOJw5InugAAAABJRU5ErkJggg=="
+      },
+      {
+        "ms": 33900,
+        "floors": 24,
+        "face": "hus6CEAAAAASUVORK5CYII="
+      },
+      {
+        "ms": 41401,
+        "floors": 32,
+        "face": "Beh5NAQEBN2KgAAAABJRU5ErkJggg=="
+      },
+      {
+        "ms": 48101,
+        "floors": 40,
+        "face": "8Py+O64TH9pe8AAAAASUVORK5CYII="
+      },
+      {
+        "ms": 54183,
+        "floors": 48,
+        "face": "g+cmlsb0ZU60wAAAABJRU5ErkJggg=="
+      },
+      {
+        "ms": 59733,
+        "floors": 56,
+        "face": "a27z6JEu8ffPwfTModzaMnaioAAAAASUVORK5CYII="
+      },
+      {
+        "ms": 64862,
+        "floors": 64,
+        "face": "8PsZBqWSwZkc0AAAAASUVORK5CYII="
+      },
+      {
+        "ms": 69626,
+        "floors": 72,
+        "face": "V+9IvA8CB1jcAAAAABJRU5ErkJggg=="
+      }
+    ],
+    "marks": {
+      "purifyAtFloors": 3,
+      "f9ms": 16929,
+      "f72ms": 69626,
+      "overMs": 75576,
+      "floorsAtOver": 80
+    },
+    "card": {
+      "clear": true,
+      "rect": {
+        "y": 95.2,
+        "h": 653.6,
+        "bottom": 748.8
+      },
+      "scrollable": false,
+      "scrollH": 652,
+      "clientH": 652,
+      "fuda": "fuda_shiori.jpg",
+      "quoteHidden": false,
+      "texts": [
+        {
+          "id": "final-heading",
+          "t": "満月成就",
+          "fs": "22px"
+        },
+        {
+          "id": "final-sub",
+          "t": "喰われた月へ、道が架かった",
+          "fs": "12px"
+        },
+        {
+          "id": "",
+          "t": "栞",
+          "fs": "12px"
+        },
+        {
+          "id": "final-title-label",
+          "t": "称号",
+          "fs": "12px"
+        },
+        {
+          "id": "final-title",
+          "t": "満月成就",
+          "fs": "17px"
+        },
+        {
+          "id": "score-label",
+          "t": "重ねた段",
+          "fs": "12px"
+        },
+        {
+          "id": "",
+          "t": "段",
+          "fs": "18px"
+        },
+        {
+          "id": "retry",
+          "t": "もう一夜",
+          "fs": "14px"
+        }
+      ],
+      "rankLine": {
+        "hidden": true,
+        "text": "",
+        "tag": null
+      },
+      "rankBlock": {
+        "hidden": true,
+        "text": "最高記録を更新"
+      },
+      "allText": "満月成就 喰われた月へ、道が架かった 栞 月に、届きました。お見事ですこと、あるじどの 称号 満月成就 重ねた段 80段 もう一夜"
+    },
+    "retry": {
+      "x": 54.4,
+      "y": 677.8,
+      "w": 281.2,
+      "h": 44,
+      "bottom": 721.8,
+      "fs": "14px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "もう一夜"
+    },
+    "hud": {
+      "floors": "80",
+      "best": "80",
+      "face": "V+9IvA8CB1jcAAAAABJRU5ErkJggg==",
+      "labels": [
+        "SHIKIFUDA KASANE",
+        "段",
+        "最高",
+        "御霊"
+      ]
+    },
+    "ls": {
+      "fudakasane_title": "満月成就",
+      "fudakasane_title_rank": "80",
+      "fudakasane_sound": "off",
+      "fudakasane_best": "80"
+    },
+    "errs": []
+  },
+  "B6_se": {
+    "card": {
+      "clear": true,
+      "rect": {
+        "y": 39.7,
+        "h": 587.6,
+        "bottom": 627.3
+      },
+      "scrollable": false,
+      "scrollH": 586,
+      "clientH": 586,
+      "fuda": "fuda_shiori.jpg",
+      "quoteHidden": false,
+      "texts": [
+        {
+          "id": "final-heading",
+          "t": "満月成就",
+          "fs": "22px"
+        },
+        {
+          "id": "final-sub",
+          "t": "喰われた月へ、道が架かった",
+          "fs": "12px"
+        },
+        {
+          "id": "",
+          "t": "栞",
+          "fs": "12px"
+        },
+        {
+          "id": "final-title-label",
+          "t": "称号",
+          "fs": "12px"
+        },
+        {
+          "id": "final-title",
+          "t": "満月成就",
+          "fs": "17px"
+        },
+        {
+          "id": "score-label",
+          "t": "重ねた段",
+          "fs": "12px"
+        },
+        {
+          "id": "",
+          "t": "段",
+          "fs": "18px"
+        },
+        {
+          "id": "retry",
+          "t": "もう一夜",
+          "fs": "14px"
+        }
+      ],
+      "rankLine": {
+        "hidden": true,
+        "text": "",
+        "tag": null
+      },
+      "rankBlock": {
+        "hidden": true,
+        "text": "最高記録を更新"
+      },
+      "allText": "満月成就 喰われた月へ、道が架かった 栞 月に、届きました。お見事ですこと、あるじどの 称号 満月成就 重ねた段 80段 もう一夜"
+    },
+    "retry": {
+      "x": 46.9,
+      "y": 568.3,
+      "w": 281.2,
+      "h": 44,
+      "bottom": 612.3,
+      "fs": "14px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "もう一夜"
+    },
+    "retryInView": true,
+    "errs": []
+  },
+  "E12": {
+    "slowTaps": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "bottom": 0,
+      "fs": "12px",
+      "vis": "visible",
+      "disp": "none",
+      "op": "1",
+      "text": ""
+    },
+    "fastTaps": {
+      "x": 49.5,
+      "y": 284.4,
+      "w": 291.1,
+      "h": 17,
+      "bottom": 301.4,
+      "fs": "12px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "／ 稽古（札が欠けない）"
+    },
+    "errs": [],
+    "practiceAutocut15s": {
+      "over": false,
+      "floors": "7",
+      "label": "／ 稽古（札が欠けない）"
+    }
+  },
+  "D11": {
+    "loadMs": 278,
+    "cardMs": 406,
+    "hud": {
+      "floors": "0",
+      "best": "0",
+      "face": "B9+3OPFo2HBcAAAAAElFTkSuQmCC",
+      "labels": [
+        "SHIKIFUDA KASANE",
+        "段",
+        "最高",
+        "御霊"
+      ]
+    },
+    "texts": 9,
+    "errs": [],
+    "size": 10921010
+  },
+  "A1_pc": {
+    "cardMs": 292,
+    "start": {
+      "x": 482.3,
+      "y": 498.3,
+      "w": 315.3,
+      "h": 49,
+      "bottom": 547.3,
+      "fs": "15px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": "月夜に入る"
+    },
+    "canvas": {
+      "x": 411.3,
+      "y": 85.5,
+      "w": 457.5,
+      "h": 686.2,
+      "bottom": 771.7,
+      "fs": "16px",
+      "vis": "visible",
+      "disp": "block",
+      "op": "1",
+      "text": ""
+    },
+    "errs": []
+  }
+}

@@ -1,0 +1,826 @@
+{
+  "A1": {
+    "readyTimeline": [
+      {
+        "ms": 388,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 440,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 493,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 545,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 598,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 651,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 702,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 755,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 809,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 861,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 913,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 967,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1020,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1074,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1128,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1181,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1235,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1288,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1342,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1396,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1447,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1500,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1552,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1606,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1658,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.01,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1710,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.07,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1763,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.18,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1816,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.31,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1869,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.45,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1922,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.58,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1974,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.71,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 2027,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.78,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 2078,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.84,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 2131,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.89,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 2183,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.92,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 2236,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.95,
+        "pe": "auto",
+        "best": "0",
+        "bt": ""
+      }
+    ],
+    "pressableMs": 2236,
+    "errs": []
+  },
+  "A2": {
+    "doorLog": [
+      {
+        "ms": 47,
+        "show": true,
+        "open": false,
+        "ovHidden": true
+      },
+      {
+        "ms": 1697,
+        "show": true,
+        "open": true,
+        "ovHidden": true
+      },
+      {
+        "ms": 3287,
+        "show": false,
+        "open": true,
+        "ovHidden": true
+      }
+    ],
+    "lockedTap": {
+      "atMs": 626,
+      "floorsAfter": "0",
+      "second": {
+        "atMs": 2940,
+        "floorsAfter": "0"
+      }
+    },
+    "ls": {
+      "fudakasane_sound": "on",
+      "fudakasane_best": "0"
+    },
+    "hud": {
+      "floors": "0",
+      "best": "0"
+    },
+    "errs": []
+  },
+  "A3": {
+    "floorsBefore": "0",
+    "floorsAfter": "1",
+    "hud": {
+      "floors": "1",
+      "best": "1"
+    }
+  },
+  "B4": {
+    "seq": [
+      {
+        "tap": 1,
+        "floors": "2",
+        "over": false
+      },
+      {
+        "tap": 2,
+        "floors": "2",
+        "over": false
+      },
+      {
+        "tap": 3,
+        "floors": "2",
+        "over": true
+      }
+    ],
+    "errs": []
+  },
+  "C9": {
+    "before": {
+      "x": 337,
+      "y": 26.5,
+      "w": 30,
+      "h": 30,
+      "bottom": 56.5,
+      "fs": "14px",
+      "cls": "",
+      "aria": "音の切り替え",
+      "text": "♪"
+    },
+    "after": {
+      "x": 337,
+      "y": 26.5,
+      "w": 30,
+      "h": 30,
+      "bottom": 56.5,
+      "fs": "14px",
+      "cls": "",
+      "aria": "音の切り替え",
+      "text": "♪"
+    },
+    "audioBefore": [],
+    "audioAfter": [],
+    "overlayShown": true,
+    "ls": {
+      "fudakasane_title": "宵の口",
+      "fudakasane_title_rank": "2",
+      "fudakasane_sound": "on",
+      "fudakasane_best": "2"
+    }
+  },
+  "C8": {
+    "savedBefore": {
+      "fudakasane_title": "札運びの見習い",
+      "fudakasane_title_rank": "9",
+      "fudakasane_sound": "off",
+      "fudakasane_best": "9"
+    },
+    "timeline": [
+      {
+        "ms": 76,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 130,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 183,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 235,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 287,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 339,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 392,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 444,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 497,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 549,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 601,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 654,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 707,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 758,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 812,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 866,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 918,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 971,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1023,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1075,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1128,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1181,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1233,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1285,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1336,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1388,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1441,
+        "ready": false,
+        "artIn": true,
+        "cardOp": 0,
+        "pe": "none",
+        "best": "0",
+        "bt": ""
+      },
+      {
+        "ms": 1493,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.03,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 1544,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.1,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 1597,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.22,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 1650,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.41,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 1703,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.54,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 1756,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.65,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 1809,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.73,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 1864,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.8,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 1918,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.87,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 1971,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.91,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 2025,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.94,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      },
+      {
+        "ms": 2078,
+        "ready": true,
+        "artIn": true,
+        "cardOp": 0.97,
+        "pe": "auto",
+        "best": "9",
+        "bt": "これまでの誉れ：札運びの見習い"
+      }
+    ],
+    "bestTitle": {
+      "x": 49.5,
+      "y": 284.5,
+      "w": 291.1,
+      "h": 17,
+      "bottom": 301.5,
+      "fs": "12px",
+      "cls": "",
+      "aria": null,
+      "text": "これまでの誉れ：札運びの見習い"
+    },
+    "hud": {
+      "floors": "0",
+      "best": "9"
+    },
+    "ls": {
+      "fudakasane_title": "札運びの見習い",
+      "fudakasane_title_rank": "9",
+      "fudakasane_sound": "off",
+      "fudakasane_best": "9"
+    }
+  },
+  "D11": {
+    "pressableMs": 2240,
+    "hud": {
+      "floors": "0",
+      "best": "0"
+    },
+    "ls": {
+      "waiwai:score:main": "{\"score\":0,\"meta\":\"{\\\"title\\\":\\\"宵の口\\\"}\",\"savedAt\":1788226916222}",
+      "waiwai:fudakasane_save": "{\"best\":0,\"title\":\"宵の口\",\"titleRank\":0,\"sound\":\"on\"}"
+    },
+    "errs": []
+  }
+}

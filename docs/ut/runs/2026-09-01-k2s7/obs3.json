@@ -1,0 +1,159 @@
+{
+  "C9": {
+    "before": {
+      "floors": "0",
+      "over": true,
+      "mute": {
+        "cls": "",
+        "text": "♪",
+        "aria": "音の切り替え",
+        "pressed": null,
+        "title": ""
+      },
+      "bodyCls": "",
+      "submits": null
+    },
+    "after": {
+      "floors": "0",
+      "over": true,
+      "mute": {
+        "cls": "",
+        "text": "♪",
+        "aria": "音の切り替え",
+        "pressed": null,
+        "title": ""
+      },
+      "bodyCls": "",
+      "submits": null
+    },
+    "afterTap": {
+      "floors": "0",
+      "over": true,
+      "mute": {
+        "cls": "",
+        "text": "♪",
+        "aria": "音の切り替え",
+        "pressed": null,
+        "title": ""
+      },
+      "bodyCls": "",
+      "submits": null
+    },
+    "again": {
+      "floors": "0",
+      "over": true,
+      "mute": {
+        "cls": "",
+        "text": "♪",
+        "aria": "音の切り替え",
+        "pressed": null,
+        "title": ""
+      },
+      "bodyCls": "",
+      "submits": null
+    },
+    "ls": {
+      "fudakasane_title": "宵の口",
+      "fudakasane_title_rank": "0",
+      "fudakasane_sound": "on",
+      "fudakasane_best": "0"
+    },
+    "errs": []
+  },
+  "zero": {
+    "s0": {
+      "floors": "0",
+      "over": false,
+      "mute": {
+        "cls": "",
+        "text": "♪",
+        "aria": "音の切り替え",
+        "pressed": null,
+        "title": ""
+      },
+      "bodyCls": "",
+      "submits": []
+    },
+    "s1": {
+      "floors": "0",
+      "over": false,
+      "mute": {
+        "cls": "",
+        "text": "♪",
+        "aria": "音の切り替え",
+        "pressed": null,
+        "title": ""
+      },
+      "bodyCls": "",
+      "submits": []
+    },
+    "s2": {
+      "floors": "0",
+      "over": true,
+      "mute": {
+        "cls": "",
+        "text": "♪",
+        "aria": "音の切り替え",
+        "pressed": null,
+        "title": ""
+      },
+      "bodyCls": "",
+      "submits": [
+        [
+          "main",
+          0,
+          {
+            "title": "宵の口"
+          }
+        ]
+      ]
+    },
+    "card": {
+      "text": "札は夜に呑まれた 重ねた道は、ここまで 称号 宵の口 重ねた段 0段 最高記録を更新 全国 3 位 ／ 3人中 › もう一夜",
+      "rankLine": {
+        "hidden": false,
+        "text": "全国 3 位 ／ 3人中›",
+        "tag": "BUTTON"
+      },
+      "mark": {
+        "hidden": false,
+        "text": "最高記録を更新"
+      }
+    },
+    "ls": {
+      "waiwai:fudakasane_save": "{\"best\":0,\"title\":\"宵の口\",\"titleRank\":0,\"sound\":\"on\"}"
+    },
+    "errs": [],
+    "banzuke": {
+      "opened": true,
+      "shown": true,
+      "text": "✕ 番付 全国 3人 1 ヒロ 11段（浄化5） 2 ナナシ 8段（浄化12） ⋮ 3 あなた 0段（浄化0）"
+    }
+  },
+  "eight": {
+    "st": {
+      "floors": "8",
+      "over": true,
+      "mute": {
+        "cls": "off",
+        "text": "♪",
+        "aria": "音の切り替え",
+        "pressed": null,
+        "title": ""
+      },
+      "bodyCls": "",
+      "submits": []
+    },
+    "card": {
+      "text": "札は夜に呑まれた 重ねた道は、ここまで 称号 札運びの見習い 重ねた段 8段 もう一夜",
+      "rankLine": {
+        "hidden": true,
+        "text": ""
+      },
+      "mark": {
+        "hidden": true,
+        "text": "最高記録を更新"
+      }
+    }
+  }
+}

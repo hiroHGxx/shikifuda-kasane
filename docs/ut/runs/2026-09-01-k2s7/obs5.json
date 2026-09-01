@@ -1,0 +1,158 @@
+{
+  "ignored3500_then4400": [
+    {
+      "afterFirst": {
+        "floors": 0,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 0,
+        "over": true
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 0,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 0,
+        "over": true
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 0,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 0,
+        "over": true
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 0,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 0,
+        "over": true
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 0,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 0,
+        "over": true
+      }
+    }
+  ],
+  "ignored3500_then5500": [
+    {
+      "afterFirst": {
+        "floors": 0,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 0,
+        "over": true
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 0,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 0,
+        "over": true
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 0,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 0,
+        "over": true
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 0,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 0,
+        "over": true
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 0,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 0,
+        "over": true
+      }
+    }
+  ],
+  "ok3800_then4700": [
+    {
+      "afterFirst": {
+        "floors": 1,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 2,
+        "over": false
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 1,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 2,
+        "over": false
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 1,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 2,
+        "over": false
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 1,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 2,
+        "over": false
+      }
+    },
+    {
+      "afterFirst": {
+        "floors": 1,
+        "over": false
+      },
+      "afterSecond": {
+        "floors": 2,
+        "over": false
+      }
+    }
+  ]
+}
