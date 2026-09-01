@@ -582,7 +582,9 @@
     const axis = floors % 2 === 0 ? "x" : "z";
     const dir = Math.random() < 0.5 ? 1 : -1;
     const start = dir === 1 ? top[axis] - F0 - 80 : top[axis] + F0 + 80;
-    slab = { axis, pos: start, x: top.x, z: top.z, w: top.w, d: top.d, dir, speed: slabSpeed(floors) };
+    // entered: 台に一度でも重なったか。出現位置は台から F0+80 離れているので、進入し切るまでの
+    // 約0.5秒は「置ける札が無い」。この間のタップを空振りにしない（目付 k2s7 の R-1）
+    slab = { axis, pos: start, x: top.x, z: top.z, w: top.w, d: top.d, dir, speed: slabSpeed(floors), entered: false };
     slab[axis] = start;
   }
 
@@ -606,6 +608,11 @@
   function place() {
     if (!started || over || !slab) return;
     if (performance.now() < pausedUntil) return;
+    // 札がまだ台に届いていない（進入中）のタップは無かったことにする。
+    // 帳が消えた直後と「もう一夜」の直後は、いちばん押したくなる瞬間なのに札は台の外にいて、
+    // 押せば必ず空振り＝0段の夜明けになっていた（目付 k2s7・R-1: 10/10 再現）。
+    // 「開始直後700msは受けない」と同じ作法で、無効な一手を黙って捨てる。
+    if (!slab.entered) return;
     const a = slab.axis;
     const len = a === "x" ? top.w : top.d;
     const t0 = top[a];
@@ -961,7 +968,9 @@
   // 全国ランキングへ送ってよい夜か。稽古（practice）は記録に残さない従来の決めごとどおり。
   // 自動プレイ（#autotest / #autocut / #autowobble）は**稽古ではなく本番ルールで動く**ため、
   // 塞がないと検証やPV撮影のたびに本番の番付が汚れる。
-  const canSubmitScore = () => !practice && !autotest && !autocut && !autowobble;
+  // 0段の夜も送らない（目付 k2s7・R-2）。番付に「0段」の行を作らない——宵あらわしの
+  // 「0柱の夜は送らない」と同じ規則。最初の1枚を外しただけの夜が全国に載る筋を閉じる。
+  const canSubmitScore = () => !practice && !autotest && !autocut && !autowobble && floors > 0;
 
   function showGameOver() {
     clearRankUI(); // 前の夜の順位を残さない
@@ -1362,6 +1371,10 @@
       if (slab.dir === 1 && slab.pos > top[a] + F0 + 80) slab.dir = -1;
       if (slab.dir === -1 && slab.pos < top[a] - F0 - 80) slab.dir = 1;
       slab[a] = slab.pos;
+      if (!slab.entered) {
+        const len = a === "x" ? top.w : top.d;
+        if (len - Math.abs(slab.pos - top[a]) > 4) slab.entered = true; // place() の空振り判定と同じ線
+      }
       if (autotest && Math.abs(slab.pos - top[a]) < 5) place();
       if (autocut && Math.abs(slab.pos - top[a] - 40) < 5) place();
       if (autowobble && Math.abs(slab.pos - (top[a] + wobble)) < 5) { place(); wobble = nextWobble(); }
