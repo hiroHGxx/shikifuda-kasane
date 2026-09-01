@@ -97,6 +97,7 @@ async function run(base, hash, opts) {
 // 目付 k2s7 で出た2件の回帰確認——①帳が消えた直後（札が台に届く前）のタップは無かったことになる
 // ②0段で終わった夜は全国ランキングへ送らない。
 async function runManual(base, taps, opts) {
+  opts = opts || {};
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: "new", args: ["--window-size=480,860"] });
   const page = await browser.newPage();
   await page.setViewport({ width: 480, height: 860 });
@@ -105,13 +106,14 @@ async function runManual(base, taps, opts) {
   await page.evaluateOnNewDocument(() => {
     window.__submits = [];
     Object.defineProperty(window, "waiwai", { configurable: true, value: {
-      mode: "bridged", load: () => Promise.resolve(null),
+      mode: "bridged", load: (k) => Promise.resolve(window.__withRecord && /fudakasane_save$/.test(k) ? { best: 9, title: "札運びの見習い", titleRank: 9, sound: "on" } : null),
       save: (k, v) => { try { localStorage.setItem("waiwai:" + k, JSON.stringify(v)); } catch (e) {} return Promise.resolve(true); },
       submitScore: (b, sc, meta) => { window.__submits.push([b, sc, meta]); return Promise.resolve({ ok: true, best: sc, rank: 1, improved: true }); },
       getMyScore: () => Promise.resolve(null),
       getTopScores: () => Promise.resolve({ entries: [{ rank: 1, name: "ヒロ", score: 1104 }], total: 1 }),
     } });
   });
+  if (opts.withRecord) await page.evaluateOnNewDocument(() => { window.__withRecord = true; });
   await page.goto(base, { waitUntil: "load" });
   // 案内カードが押せるまで（ready かつ opacity≥0.95。pointer-events:none のうちに押すと何も起きない）
   await page.waitForFunction(() => { const ov = document.getElementById("title-overlay"), c = ov.querySelector(".card");
@@ -181,6 +183,11 @@ async function runManual(base, taps, opts) {
   const zero = await runManual(base, [6300], { shot: "/tmp/kasane-zero-night.png", settle: 1800 });
   check("0段の夜は番付へ送らない（夜明けは出る・順位の行は無い・送信0回）",
     zero.state.over && zero.state.floors === "0" && zero.state.rankLineHidden && zero.state.submits.length === 0 && zero.errors.length === 0, zero);
+
+  // ⑦ 記録を持つ人の0段は送る（番付は自己ベストしか持たないので記録は下がらない・順位の行が出る）
+  const zeroRec = await runManual(base, [6300], { shot: "/tmp/kasane-zero-night-with-record.png", settle: 1800, withRecord: true });
+  check("記録を持つ人の0段は送る（送信1回・順位の行あり）",
+    zeroRec.state.over && zeroRec.state.floors === "0" && !zeroRec.state.rankLineHidden && zeroRec.state.submits.length === 1 && zeroRec.errors.length === 0, zeroRec);
 
   srv.close();
   process.exit(failed ? 1 : 0);
